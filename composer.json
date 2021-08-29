@@ -31,5 +31,12 @@
             "email": "pdchaudhary1998@gmail.com"
         }
     ],
+    "extra": {
+        "pimcore": {
+          "bundles": [
+            "Pdchaudhary\\LokaliseTranslateBundle\\LokaliseTranslateBundle"
+          ]
+        }
+    },
     "minimum-stability": "dev"
 }

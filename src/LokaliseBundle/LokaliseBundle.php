@@ -4,9 +4,15 @@ namespace Pdchaudhary\LokaliseTranslateBundle;
 
 use Pimcore\Extension\Bundle\AbstractPimcoreBundle;
 use Pimcore\Extension\Bundle\PimcoreBundleInterface;
+use PackageVersions\Versions;
+use Pimcore\Extension\Bundle\Traits\PackageVersionTrait;
 
 class LokaliseBundle extends AbstractPimcoreBundle implements PimcoreBundleInterface
 {
+
+    use PackageVersionTrait;
+    const PACKAGE_NAME = 'pdchaudhary/lokalise-pimcore';
+
     public function getJsPaths()
     {
         return [
@@ -44,6 +50,27 @@ class LokaliseBundle extends AbstractPimcoreBundle implements PimcoreBundleInter
 
     public function getVersion(){
         return "1.0";
+    }
+
+    public static function getSolutionVersion(){
+        //code duplication from PackageVersionTrait... sorry
+        $version = Versions::getVersion(self::PACKAGE_NAME);
+
+        // normalizes v2.3.0@9e016f4898c464f5c895c17993416c551f1697d3 to 2.3.0
+        $version = preg_replace('/^v/', '', $version);
+        $version = preg_replace('/@(.+)$/', '', $version);
+
+        return $version;
+    }
+
+    /**
+     * Returns the composer package name used to resolve the version
+     *
+     * @return string
+     */
+    protected function getComposerPackageName(): string
+    {
+        return self::PACKAGE_NAME;
     }
    
 }
