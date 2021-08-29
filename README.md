@@ -6,6 +6,8 @@ This extension will work as a bridge between Pimcore and Lokalise for the purpos
 
 # Installation
 
+composer require pdchaudhary/lokalise-pimcore
+
 1. Open Pimcore admin panel
 2. Go to Setting and click on Bundles
 3. Click on plus icon(+) to enable the plugin
