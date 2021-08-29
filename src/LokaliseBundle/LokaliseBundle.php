@@ -7,7 +7,7 @@ use Pimcore\Extension\Bundle\PimcoreBundleInterface;
 use PackageVersions\Versions;
 use Pimcore\Extension\Bundle\Traits\PackageVersionTrait;
 
-class LokaliseBundle extends AbstractPimcoreBundle implements PimcoreBundleInterface
+class LokaliseTranslateBundle extends AbstractPimcoreBundle implements PimcoreBundleInterface
 {
 
     use PackageVersionTrait;
