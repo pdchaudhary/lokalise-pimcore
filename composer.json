@@ -1,0 +1,35 @@
+{
+    "name": "pdchaudhary/lokalise-pimcore",
+    "description": "Automatically translate and review your content via Lokalise.",
+    "type": "composer-plugin",
+    "require": {
+        "pimcore/pimcore": ">=6.0",
+        "php": ">=7.0",
+        "elements/process-manager-bundle": ">=v3.1.9"
+    },
+    "keywords": [
+        "pimcore",
+        "pimcore-plugin",
+        "marketplace",
+        "e-commerce",
+        "translation",
+        "deepL",
+        "lokalise",
+        "Automatic",
+        "Machine translation"
+      ],
+    "homepage": "https://pravinchaudhary.com",
+    "autoload": {
+        "psr-4": {
+          "Pdchaudhary\\LokaliseTranslateBundle\\": "src/LokaliseTranslateBundle"
+        }
+    },
+    "license": "GPL-3.0-or-later",
+    "authors": [
+        {
+            "name": "Pravin Chaudhary",
+            "email": "pdchaudhary1998@gmail.com"
+        }
+    ],
+    "minimum-stability": "dev"
+}

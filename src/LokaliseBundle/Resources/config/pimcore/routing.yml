@@ -1,0 +1,5 @@
+lokalise:
+    resource: "@LokaliseBundle/Controller/"
+    type:     annotation
+    prefix:   /
+

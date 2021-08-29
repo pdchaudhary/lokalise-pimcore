@@ -1,0 +1,109 @@
+
+pimcore:
+    workflows:
+        lokalise_translation_object:
+            label: 'Lokalise Translation Workflow'
+            type: 'state_machine'
+            supports:
+            - '\Pimcore\Model\DataObject'
+            places:
+                new:
+                    label: 'New'
+                    color: '#377ea9'
+
+                sent_for_translation:
+                    label: 'Sent'
+                    color: '#377ea9'
+
+
+                translations_updated:
+                    label: 'Updated'
+                    color: '#d9ef36'
+
+                translated_verified:  
+                    label: 'Verified'
+                    color: '#d9ef36'
+                
+                awaiting_pull:
+                    label: 'Awaiting Pull'
+                    color: '#d9ef36'
+                     
+            transitions:
+                new_to_sent:
+                    from: new
+                    to: sent_for_translation
+                    options:
+                        label: 'Sent'
+
+                sent_to_update:
+                    from: sent_for_translation
+                    to: translations_updated
+                    options:
+                        label: 'Updated'
+
+                sent_to_awaiting_pull:
+                    from: sent_for_translation
+                    to: awaiting_pull
+                    options:
+                        label: 'Awaiting Pull'
+
+                sent_to_verified:
+                    from: sent_for_translation
+                    to: translated_verified
+                    options:
+                        label: 'Verified'
+
+                updated_to_verified:
+                    from: translations_updated
+                    to: translated_verified
+                    options:
+                        label: 'Verified'
+
+                updated_to_awaiting_pull:
+                    from: translations_updated
+                    to: awaiting_pull
+                    options:
+                        label: 'Awaiting Pull'
+
+                updated_to_sent:
+                    from: translations_updated
+                    to: sent_for_translation
+                    options:
+                        label: 'Sent'
+
+                awaiting_pull_to_verified:
+                    from: awaiting_pull
+                    to: translated_verified
+                    options:
+                        label: 'Verified'
+
+                awaiting_pull_to_sent:
+                    from: awaiting_pull
+                    to: sent_for_translation
+                    options:
+                        label: 'Sent'
+                
+                awaiting_pull_to_update:
+                    from: awaiting_pull
+                    to: translations_updated
+                    options:
+                        label: 'Updated'
+
+                verified_pull_to_update:
+                    from: translated_verified
+                    to: translations_updated
+                    options:
+                        label: 'Updated'
+                
+                verified_pull_to_sent:
+                    from: translated_verified
+                    to: translations_updated
+                    options:
+                        label: 'Updated'
+
+                verified_pull_to_awaiting_pull:
+                    from: translated_verified
+                    to: awaiting_pull
+                    options:
+                        label: 'Awaiting Pull'
+                        
