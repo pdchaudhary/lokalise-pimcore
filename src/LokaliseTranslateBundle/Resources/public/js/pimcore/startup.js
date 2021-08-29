@@ -1,8 +1,8 @@
-pimcore.registerNS("pimcore.plugin.LokaliseBundle");
+pimcore.registerNS("pimcore.plugin.LokaliseTranslateBundle");
 
-pimcore.plugin.LokaliseBundle = Class.create(pimcore.plugin.admin, {
+pimcore.plugin.LokaliseTranslateBundle = Class.create(pimcore.plugin.admin, {
     getClassName: function () {
-        return "pimcore.plugin.LokaliseBundle";
+        return "pimcore.plugin.LokaliseTranslateBundle";
     },
 
     initialize: function () {
@@ -159,4 +159,4 @@ pimcore.plugin.LokaliseBundle = Class.create(pimcore.plugin.admin, {
     }
 });
 
-var LokaliseBundlePlugin = new pimcore.plugin.LokaliseBundle();
+var LokaliseTranslateBundlePlugin = new pimcore.plugin.LokaliseTranslateBundle();

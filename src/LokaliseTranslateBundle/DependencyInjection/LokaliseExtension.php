@@ -12,7 +12,7 @@ use Symfony\Component\DependencyInjection\Loader;
  *
  * @link http://symfony.com/doc/current/cookbook/bundles/extension.html
  */
-class LokaliseExtension extends Extension
+class LokaliseTranslateExtension extends Extension
 {
     /**
      * {@inheritdoc}

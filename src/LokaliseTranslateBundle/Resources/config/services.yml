@@ -29,7 +29,7 @@ services:
     Pdchaudhary\LokaliseTranslateBundle\Installer:
         public: true
         arguments:   
-            $bundle: "@=service('kernel').getBundle('LokaliseBundle')"
+            $bundle: "@=service('kernel').getBundle('LokaliseTranslateBundle')"
 
     
         
