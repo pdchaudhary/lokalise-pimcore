@@ -1,7 +1,7 @@
 {
     "name": "pdchaudhary/lokalise-pimcore",
     "description": "Automatically translate and review your content via Lokalise.",
-    "type": "composer-plugin",
+    "type": "pimcore-bundle",
     "require": {
         "pimcore/pimcore": ">=6.0",
         "php": ">=7.0",
