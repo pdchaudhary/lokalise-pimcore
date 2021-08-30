@@ -16,11 +16,11 @@ class LokaliseTranslateBundle extends AbstractPimcoreBundle implements PimcoreBu
     public function getJsPaths()
     {
         return [
-            '/bundles/lokalise/js/pimcore/startup.js',
-            '/bundles/lokalise/js/translation/lokaliseobjectFieldsStatus.js',
-            '/bundles/lokalise/js/translation/translateDocumentAll.js',
-            '/bundles/lokalise/js/translation/singleTranslateObject.js',
-            '/bundles/lokalise/js/translation/objectUtill.js',
+            '/bundles/lokalisetranslate/js/pimcore/startup.js',
+            '/bundles/lokalisetranslate/js/translation/lokaliseobjectFieldsStatus.js',
+            '/bundles/lokalisetranslate/js/translation/translateDocumentAll.js',
+            '/bundles/lokalisetranslate/js/translation/singleTranslateObject.js',
+            '/bundles/lokalisetranslate/js/translation/objectUtill.js',
         ];
     }
 
@@ -44,7 +44,7 @@ class LokaliseTranslateBundle extends AbstractPimcoreBundle implements PimcoreBu
     public function getCssPaths()
     {
         return [
-            '/bundles/lokalise/css/index.css'
+            '/bundles/lokalisetranslate/css/index.css'
         ];
     }
 
