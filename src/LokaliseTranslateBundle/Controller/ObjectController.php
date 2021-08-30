@@ -103,27 +103,26 @@ class ObjectController extends FrontendController
         
             if(!empty($newKeys)){
                 $newcontent = $keyApiService->createKeys($projectId,$newKeys);
-            }
-        
-        
-
-            $keysResponse = $newcontent->keys;
-            if(!empty($keysResponse)){
-                foreach($keysResponse as $keyItem){
-                    $keyItemObject  = LocaliseKeys::getByKeyName($keyItem->key_name->web,1 );
+           
+                $keysResponse = $newcontent->keys;
+                if(!empty($keysResponse)){
+                    foreach($keysResponse as $keyItem){
+                        $keyItemObject  = LocaliseKeys::getByKeyName($keyItem->key_name->web,1 );
+                        
+                        if(NULL === $keyItemObject){
+                            $localiseKeys = new LocaliseKeys();
+                            $localiseKeys->setElementId($objectId); 
+                            $localiseKeys->setKeyName($keyItem->key_name->web); 
+                            $localiseKeys->setKeyId($keyItem->key_id);
+                            $localiseKeys->setType(LocaliseKeys::$objectType);
+                            $localiseKeys->setKeyValue("");
+                            $localiseKeys->setFieldType("");
+                            $localiseKeys->save();
+                        }
                     
-                    if(NULL === $keyItemObject){
-                        $localiseKeys = new LocaliseKeys();
-                        $localiseKeys->setElementId($objectId); 
-                        $localiseKeys->setKeyName($keyItem->key_name->web); 
-                        $localiseKeys->setKeyId($keyItem->key_id);
-                        $localiseKeys->setType(LocaliseKeys::$objectType);
-                        $localiseKeys->setKeyValue("");
-                        $localiseKeys->setFieldType("");
-                        $localiseKeys->save();
                     }
-                
                 }
+
             }
 
             if(!empty($isExistKeys)){

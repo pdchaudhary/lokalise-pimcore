@@ -190,5 +190,18 @@ class SharedTranslationController extends FrontendController
          return new Response('okay');
     }
 
+    /** 
+     * @Route("/admin/translate/translate_get_auth_key")
+    */
+    public function getAuthKeyAction()
+    {
+        $authKey = WebsiteSetting::getByName("deepl_auth_key") ? WebsiteSetting::getByName("deepl_auth_key")->getData() : null;
+
+        return JsonResponse::create([
+                "authKey" => $authKey,
+                "exists" => (($authKey == null || "") ? false : true),
+        ]);
+    }
+
     
 }
