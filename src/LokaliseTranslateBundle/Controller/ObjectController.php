@@ -104,6 +104,7 @@ class ObjectController extends FrontendController
             if(!empty($newKeys)){
                 $newcontent = $keyApiService->createKeys($projectId,$newKeys);
            
+
                 $keysResponse = $newcontent->keys;
                 if(!empty($keysResponse)){
                     foreach($keysResponse as $keyItem){

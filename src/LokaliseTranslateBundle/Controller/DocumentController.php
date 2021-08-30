@@ -57,7 +57,9 @@ class DocumentController extends FrontendController
 
         if(!empty($newKeys)){
             $newcontent = $keyApiService->createKeys($projectId,$newKeys);
-       
+        
+
+        
             $keysResponse = $newcontent->keys;
             if(!empty($keysResponse)){
                 foreach($keysResponse as $keyItem){
@@ -263,7 +265,7 @@ class DocumentController extends FrontendController
         if(NULL != $document && $translatedKeys){
             $newDoc = Document::getById($document->getId());
             $translateDoc = Document::getById($translateDocument->getParentDocumentId());
-            $newDoc->setElements($translateDoc->getElements());
+            $newDoc->setEditables($translateDoc->getEditables());
 
             foreach ($translatedKeys as $key => $element) {
                          
@@ -276,7 +278,7 @@ class DocumentController extends FrontendController
                     $keyName = $keyNameArray[1];
                     if(null != $fieldType){
                       
-                        $newDoc->setRawElement($keyName, $fieldType, $element->getValueData());
+                        $newDoc->setRawEditable($keyName, $fieldType, $element->getValueData());
                     }
                 }else{
                     
@@ -332,8 +334,8 @@ class DocumentController extends FrontendController
                 $translationsBaseDocument = Document::getById($translateDocument->getParentDocumentId());
                 $createValues['template'] = $translationsBaseDocument->getTemplate();
                 $createValues['controller'] = $translationsBaseDocument->getController();
-                $createValues['action'] = $translationsBaseDocument->getAction();
-                $createValues['module'] = $translationsBaseDocument->getModule();
+              
+               
             } elseif ($mainDocument->getType() == 'page' || $mainDocument->getType() == 'snippet' || $mainDocument->getType() == 'email') {
                 $createValues += Tool::getRoutingDefaults();
             }
@@ -405,7 +407,7 @@ class DocumentController extends FrontendController
                     $translateDoc = Document::getById($translateDocument->getParentDocumentId());
 
 
-                    $newDoc->setElements($translateDoc->getElements());
+                    $newDoc->setEditables($translateDoc->getEditables());
 
                    
 
@@ -419,7 +421,7 @@ class DocumentController extends FrontendController
                             $keyNameArray = explode('||',$keyNameObject);
                             $keyName = $keyNameArray[1];
                             if(null != $fieldType){
-                                $newDoc->setRawElement($keyName, $fieldType, $element->getValueData());
+                                $newDoc->setRawEditable($keyName, $fieldType, $element->getValueData());
                             }
                         }else{
                             $errorMessage = "Key is not found in table";

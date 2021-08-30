@@ -16,12 +16,12 @@ class DocumentHelper {
         $document = Document::getById($documentId);
     
         $elems = $db->fetchAll("SELECT name, type, data
-                                    FROM documents_elements
+                                    FROM documents_editables
                                     WHERE documentId=" . $documentId . " AND (type='input' OR type='textarea' OR type='wysiwyg' ) and data!=''  AND name not LIKE '%style%'");
 
         if ($elems == null && $document->getContentMasterDocumentId() != null) {
             $elems = $db->fetchAll("SELECT name, type, data
-                                    FROM documents_elements
+                                    FROM documents_editables
                                     WHERE documentId=" . $document->getContentMasterDocumentId() . " AND (type='input' OR type='textarea' OR type='wysiwyg' ) and data!='' AND name not LIKE '%style%'");
         }
         

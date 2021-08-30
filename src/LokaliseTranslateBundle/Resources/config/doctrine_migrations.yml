@@ -1,0 +1,3 @@
+doctrine_migrations:
+    migrations_paths:
+        'Pdchaudhary\LokaliseTranslateBundle\Migrations': '%kernel.project_dir%/vendor/pdchaudhary/lokalise-pimcore/src/LokaliseTranslateBundle/Migrations'

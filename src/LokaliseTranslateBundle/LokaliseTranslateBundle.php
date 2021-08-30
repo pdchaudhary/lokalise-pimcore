@@ -12,7 +12,8 @@ class LokaliseTranslateBundle extends AbstractPimcoreBundle implements PimcoreBu
 
     use PackageVersionTrait;
     const PACKAGE_NAME = 'pdchaudhary/lokalise-pimcore';
-
+    const BUNDLE_NAME = 'LokaliseTranslateBundle';
+    
     public function getJsPaths()
     {
         return [
@@ -49,7 +50,7 @@ class LokaliseTranslateBundle extends AbstractPimcoreBundle implements PimcoreBu
     }
 
     public function getVersion(){
-        return "1.0";
+        return "2.0";
     }
 
     public static function getSolutionVersion(){

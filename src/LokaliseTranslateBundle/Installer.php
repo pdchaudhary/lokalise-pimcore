@@ -4,87 +4,121 @@ namespace Pdchaudhary\LokaliseTranslateBundle;
 
 use Doctrine\DBAL\Migrations\Version;
 use Doctrine\DBAL\Schema\Schema;
-use Pimcore\Extension\Bundle\Installer\MigrationInstaller;
+use Pdchaudhary\LokaliseTranslateBundle\Migrations\Version20210829000000;
 use Pdchaudhary\LokaliseTranslateBundle\Service\ProjectApiService;
+use Pimcore\Extension\Bundle\Installer\SettingsStoreAwareInstaller;
 
-class Installer extends MigrationInstaller
+
+class Installer extends SettingsStoreAwareInstaller
 {
-    public function migrateInstall(Schema $schema, Version $version)
-    {
 
+    public function install()
+    {
         $projectApiService =  new ProjectApiService();
         $projectApiService->createProjectOnLokalise();
-
-        $table = $schema->createTable('localise_translate_document');
-        $table->addColumn('id', 'integer', [
-            'autoincrement' => true,
-        ]);
-
-        $table->addColumn('parentDocumentId', 'integer');
-        $table->addColumn('language', 'string');
-        $table->addColumn('parentId', 'integer');
-        $table->addColumn('key', 'string');
-        $table->addColumn('navigation', 'string');
-        $table->addColumn('title', 'string');
-        $table->addColumn('status', 'string');
-        $table->addColumn('isCreated', 'string');
-        $table->setPrimaryKey(['id']);
-
-        $table1 = $schema->createTable('localise_translate_keys');
-
-        $table1->addColumn('id', 'integer', [
-            'autoincrement' => true,
-        ]);
-        $table1->addColumn('translate_document_id', 'integer');
-        $table1->addColumn('language', 'string');
-        $table1->addColumn('localise_key_id', 'integer');
-        $table1->addColumn('valueData', 'text');
-        $table1->addColumn('is_reviewed', 'integer');
-
-
-        $table1->addColumn('modified_at_timestamp', 'string');
-        $table1->addColumn('is_pushed', 'integer');
-        $table1->setPrimaryKey(['id']);
-
-
-        $table1 = $schema->createTable('localise_keys');
-
-        $table1->addColumn('id', 'integer', [
-            'autoincrement' => true,
-        ]);
-        $table1->addColumn('elementId', 'string');
-        $table1->addColumn('keyName', 'string');
-        $table1->addColumn('keyId', 'string');
-        $table1->addColumn('keyValue', 'text');
-        $table1->addColumn('type', 'string');
-        $table1->addColumn('fieldType', 'string');
-        $table1->setPrimaryKey(['id']);
-
-
-        $table1 = $schema->createTable('localise_translate_object');
-        
-        $table1->addColumn('id', 'integer', [
-            'autoincrement' => true,
-        ]);
-        $table1->addColumn('object_id', 'integer');
-        $table1->addColumn('language', 'string');
-        $table1->addColumn('localise_key_id', 'integer');
-        $table1->addColumn('valueData', 'text');
-        $table1->addColumn('is_reviewed', 'integer');
-        $table1->addColumn('modified_at_timestamp', 'string');
-        $table1->addColumn('is_pushed', 'integer');
-        $table1->setPrimaryKey(['id']);
-        // or
-        // $version->addSql('CREATE TABLE my_bundle ...');
+        $this->createTables();
+        parent::install();
     }
 
-    public function migrateUninstall(Schema $schema, Version $version)
+    public function uninstall()
     {
-        $schema->dropTable('localise_translate_document');
-        $schema->dropTable('localise_translate_keys');
-        $schema->dropTable('localise_keys');
-        $schema->dropTable('localise_translate_object');
-        // or
-        // $version->addSql('DROP TABLE my_bundle');
+        $tables = [
+            'localise_translate_document',
+            'localise_translate_keys',
+            'localise_keys',
+            'localise_translate_object'
+        ];
+        foreach ($tables as $table) {
+            $this->getDb()->query("DROP TABLE IF EXISTS " . $table);
+        }
+
+        parent::uninstall();
     }
+
+     /**
+     * {@inheritdoc}
+     */
+    public function needsReloadAfterInstall()
+    {
+        return true;
+    }
+
+
+    protected function createTables()
+    {
+        $db = $this->getDb();
+
+        $db->query(
+            "CREATE TABLE IF NOT EXISTS `localise_translate_document` (
+                `id` INT(10) UNSIGNED NOT NULL AUTO_INCREMENT,
+                `parentDocumentId` int(11) NOT NULL,
+                `language` varchar(255) NOT NULL,
+                `parentId` int(11) NOT NULL,
+                `key` varchar(255) NOT NULL,
+                `navigation` varchar(255) NOT NULL,
+                `title` varchar(255) NOT NULL,
+                `status` varchar(255) NOT NULL,
+                `isCreated` varchar(255) NOT NULL,
+                PRIMARY KEY (`id`)
+              ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+        ");
+
+        $db->query(
+            "CREATE TABLE IF NOT EXISTS `localise_translate_keys` (
+                `id` INT(10) UNSIGNED NOT NULL AUTO_INCREMENT,
+                `translate_document_id` int(11) NOT NULL,
+                `language` varchar(255) NOT NULL,
+                `localise_key_id` int(11) NOT NULL,
+                `valueData` longtext NOT NULL,
+                `is_reviewed` int(11) NOT NULL,
+                `modified_at_timestamp` varchar(255) NOT NULL,
+                `is_pushed` int(11) NOT NULL,
+                PRIMARY KEY (`id`)
+              ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;"
+        );
+
+        $db->query(
+            "CREATE TABLE IF NOT EXISTS `localise_keys` (
+                `id` INT(10) UNSIGNED NOT NULL AUTO_INCREMENT,
+                `elementId` varchar(255) NOT NULL,
+                `keyName` varchar(255) NOT NULL,
+                `keyId` varchar(255) NOT NULL,
+                `keyValue` longtext NOT NULL,
+                `type` varchar(255) NOT NULL,
+                `fieldType` varchar(255) NOT NULL,
+                PRIMARY KEY (`id`)
+              ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;"
+        );
+
+        $db->query(
+            "CREATE TABLE IF NOT EXISTS `localise_translate_object` (
+                `id` INT(10) UNSIGNED NOT NULL AUTO_INCREMENT,
+                `object_id` int(11) NOT NULL,
+                `language` varchar(255) NOT NULL,
+                `localise_key_id` int(11) NOT NULL,
+                `valueData` longtext NOT NULL,
+                `is_reviewed` int(11) NOT NULL,
+                `modified_at_timestamp` varchar(255) NOT NULL,
+                `is_pushed` int(11) NOT NULL,
+                PRIMARY KEY (`id`)
+              ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;"
+        );
+
+    }
+
+
+    public function getLastMigrationVersionClassName(): ?string
+    {
+        return Version20210829000000::class;
+    }
+
+     /**
+     * @return \Pimcore\Db\Connection|\Pimcore\Db\ConnectionInterface
+     */
+    protected function getDb(){
+        return \Pimcore\Db::get();
+    }
+    
+
+   
 }
