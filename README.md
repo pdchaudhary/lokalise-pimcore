@@ -28,11 +28,3 @@ composer require pdchaudhary/lokalise-pimcore
 7. The installation process involves creating 3 projects within Lokalise one each for Documents, Objects and Shared Translations. The projects in Lokalise would be created to have the same number of languages as defined in Pimcore settings. Post creation of projects in Lokalise, their Lokalise projectids would be added to websitesettings. If in case the projects already exist in Lokalise, their projectids would be synced to websitesettings.
 8. The installation is now successfully completed.
 
-# Document translation
--> TODO
-
-# Object translation
--> TODO
-
-# Shared translation
--> TODO
