@@ -36,5 +36,6 @@ class SharedTranslationGenerate extends AbstractCommand {
             $monitoringItem->setMessage($e->getMessage());
             $monitoringItem->stopProcess();
         }
+        return 1;
     }
 }
