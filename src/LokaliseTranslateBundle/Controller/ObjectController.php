@@ -503,20 +503,6 @@ class ObjectController extends FrontendController
     }
 
 
-      /** 
-     * @Route("/admin/class-defination")
-    */
-    public function isAllowedToUpdate1(ObjectHelper $objectHelper){
-        $data = $objectHelper->getObjectsIds();
-        echo '<pre>';print_r($data);exit;
-        return true;
 
-    }
-
-
-    
-
-   
-    
 
 }
