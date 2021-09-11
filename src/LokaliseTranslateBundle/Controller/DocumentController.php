@@ -490,27 +490,24 @@ class DocumentController extends FrontendController
 
         if(!empty($newKeys)){
             $newcontent = $keyApiService->createKeys($projectId,$newKeys);
-        }
-
-      
-
-        $keysResponse = $newcontent->keys;
-        if(!empty($keysResponse)){
-            foreach($keysResponse as $keyItem){
-                $keyItemObject  = LocaliseKeys::getByKeyName($keyItem->key_name->web,1 );
-                
-                if($keyItemObject === NULL){
-                    $localiseKeys = new LocaliseKeys();
-                    $localiseKeys->setElementId($documentId); 
-                    $localiseKeys->setKeyName($keyItem->key_name->web); 
-                    $localiseKeys->setKeyId($keyItem->key_id);
-                    $localiseKeys->setType(LocaliseKeys::$docType);
-                    $localiseKeys->setKeyValue("");
-                    $localiseKeys->setFieldType("");
-                    $localiseKeys->save();
+            $keysResponse = $newcontent->keys;
+            if(!empty($keysResponse)){
+                foreach($keysResponse as $keyItem){
+                    $keyItemObject  = LocaliseKeys::getByKeyName($keyItem->key_name->web,1 );
                     
+                    if($keyItemObject === NULL){
+                        $localiseKeys = new LocaliseKeys();
+                        $localiseKeys->setElementId($documentId); 
+                        $localiseKeys->setKeyName($keyItem->key_name->web); 
+                        $localiseKeys->setKeyId($keyItem->key_id);
+                        $localiseKeys->setType(LocaliseKeys::$docType);
+                        $localiseKeys->setKeyValue("");
+                        $localiseKeys->setFieldType("");
+                        $localiseKeys->save();
+                        
+                    }
+                
                 }
-            
             }
         }
 
