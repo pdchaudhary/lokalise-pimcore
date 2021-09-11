@@ -222,7 +222,7 @@ function createTranslateLocaliseDocument(documentTranslate) {
                                                 },
                                                 success: function (response) {
                                                     var elements = JSON.parse(response.responseText, true);
-                                                    console.log(elements);
+                                                  
                                                     if (elements.elements != null) {
 
                                                         var xml = "";
@@ -486,7 +486,7 @@ function createTranslateLocaliseDocument(documentTranslate) {
                                                 },
                                                 success: function (response) {
                                                     var elements = JSON.parse(response.responseText, true);
-                                                    console.log(elements);
+                                               
                                                     if (elements.elements != null) {
 
                                                         var xml = "";

@@ -13,6 +13,7 @@ class DocumentHelper {
 
     public function getAllKeys($documentId){
         $db = Db::get();
+        $elements = null;
         $document = Document::getById($documentId);
     
         $elems = $db->fetchAll("SELECT name, type, data
