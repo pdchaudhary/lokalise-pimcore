@@ -1,6 +1,8 @@
 # lokalise-pimcore
 Automatically translate and review your content via Lokalise
 
+**DEMO VIDEO :** https://www.youtube.com/watch?v=5gyPa9YW020
+
 # Overview
 This extension will work as a bridge between Pimcore and Lokalise for the purpose of automating the whole translation workflow. Thus eliminating most of the manual steps in the task along with availing quality translation-review service from Lokalise.
 
