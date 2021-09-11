@@ -55,8 +55,41 @@ There are two flows in the document translation.
 3. After clicking on the “Update” button, It will update keys in Lokalise. The document state will change to “Updated”.
 4. Only the updated component/keys would be sent for the update in translation. Those keys would be set to unverified at Lokalise end, and would be required to be verified in order to get them updated in Pimcore.
 ![image](https://user-images.githubusercontent.com/30948231/132936643-289bedf9-bed7-46b5-81cd-83b2167755eb.png)
-5. on Click Document sync it will check full document translation in a certain language is done. If so, a child document for that language is automatically updated with the received translation keys and also it will be set verified for that child document.
+5. Need to Click Document sync aftet that it will check full document translation in a certain language is done. If so, a child document for that language is automatically updated with the received translation keys and also it will be set verified for that child document.
 
+**Note : Don’t push the keys if parent(path) document is not available for child documents**
+For example: I want to generate a - > test page as de -> test page but de is not available then it will not work so first we need to generate de.
+
+# Object translation
+
+# Create Object:-
+
+1. In Object, fields/keys creation option is available at Toolbar -> Lokalise Dropdown -> Create.
+![image](https://user-images.githubusercontent.com/30948231/132936722-ffe400a7-adca-4e2b-af9b-4ff9a97f650c.png)
+2. This will send the fields as keys to Lokalise and change the status of the Object from “New” to “Sent”.
+![image](https://user-images.githubusercontent.com/30948231/132936741-f237e45f-9f78-4537-9ccb-cf5e673d7745.png)
+3. Need to click on object sync to get the translations of Object fields/keys from Lokalise by setting them reviewed and verified.
+
+# Update Object:-
+
+1. Update object works the same as Update Document.
+
+# Shared translation
+
+There are two jobs for that 
+1. Generate/Update keys job (Push Shared translation)
+2. Sync keys job ( Pull Shared translation)
+It will generate/update and sync with Lokalise with those jobs.
+
+
+# List of jobs
+
+1. Sync documents (Work as bulk pull)
+2. Sync objects (Work as bulk pull)
+3. Bulk Object Push
+4. Generate/Update Shared Translation keys
+5. Sync shared translation
+6. Sync Lokalise keys with Pimcore database
 
 
 
