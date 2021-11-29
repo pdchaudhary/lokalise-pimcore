@@ -25,6 +25,7 @@ use Pdchaudhary\LokaliseTranslateBundle\Service\Languages;
 use Pdchaudhary\LokaliseTranslateBundle\Service\ObjectHelper;
 use Pdchaudhary\LokaliseTranslateBundle\Service\WorkflowHelper;
 use Pimcore\Model\DataObject\Concrete as ConcreteObject;
+use Pimcore\Model\DataObject\ClassDefinition;
 
 class ObjectController extends FrontendController
 {
@@ -39,6 +40,72 @@ class ObjectController extends FrontendController
         $objectId = $request->get("objectId");
         $this->pushToLokalise($objectId, $keyApiService, $workflowHelper);
         return new Response('okay');
+    }
+
+
+    public function getLokaliseObjectBricksData($object){
+        $classDefinition = ClassDefinition::getById($object->getClassId());
+        $objectBricks = [];
+        $fieldDefinations = $classDefinition->getFieldDefinitions();
+        foreach ($fieldDefinations as $key => $value) {
+            if($value->fieldtype == 'objectbricks'){
+                $objectBricks[$key] = [$value];
+            }
+        }
+        $objectBricksLanguageData = [];
+        foreach ($objectBricks as $fieldkey => $fieldvalue) {
+            $fieldObject = $object->{'get'.ucfirst($fieldkey)}();
+            if($fieldObject){
+                $items = $fieldObject->getItems();
+                foreach ($items as $index => $value) {
+                    $classList = explode('\\',get_class($value));
+                    $isEligible = method_exists($value,'getLocalizedfields');
+                    if($isEligible){
+                        $localiseFields = $value->getLocalizedfields();
+                        $keys = $localiseFields->getInternalData()['en'];
+                        $objectBricksLanguageData[] = [
+                            'field' => $fieldkey,
+                            'index' => 'NA',
+                            'keys' =>  $keys,
+                            'className' => $classList[count($classList) - 1]
+                        ];
+                    }
+                }
+            }
+        }
+        return $objectBricksLanguageData;
+    }
+    public function getLokaliseFieldCollectionData($object){
+        $classDefinition = ClassDefinition::getById($object->getClassId());
+        $fieldCollections = [];
+        $fieldDefinations = $classDefinition->getFieldDefinitions();
+        foreach ($fieldDefinations as $key => $value) {
+            if($value->fieldtype == 'fieldcollections'){
+                $fieldCollections[$key] = [$value];
+            }
+        }
+        $fieldCollectionLanguageData = [];
+        foreach ($fieldCollections as $fieldkey => $fieldvalue) {
+            $fieldObject = $object->{'get'.ucfirst($fieldkey)}();
+            if($fieldObject){
+                $items = $fieldObject->getItems();
+                foreach ($items as $index => $value) {
+                    $classList = explode('\\',get_class($value));
+                    $isEligible = method_exists($value,'getLocalizedfields');
+                    if($isEligible){
+                        $localiseFields = $value->getLocalizedfields();
+                        $keys = $localiseFields->getInternalData()['en'];
+                        $fieldCollectionLanguageData[] = [
+                            'field' => $fieldkey,
+                            'index' => $index,
+                            'keys' =>  $keys,
+                            'className' => $classList[count($classList) - 1]
+                        ];
+                    }
+                }
+            }
+        }
+        return  $fieldCollectionLanguageData;
     }
 
     function pushToLokalise($objectId, $keyApiService,$workflowHelper){
@@ -86,6 +153,63 @@ class ObjectController extends FrontendController
                     ];
                 }
             }
+
+            $fieldCollections = $this->getLokaliseFieldCollectionData($object);
+          
+            foreach($fieldCollections as  $fields){
+                foreach($fields['keys'] as $key => $field){
+                    if($field){
+                        $totalTransaltion = [];
+                        $engTransaltion = [
+                            "language_iso" => "en",
+                            "translation" =>  $field
+                        ];
+                        $totalTransaltion[] = $engTransaltion;
+                        $locFields[] = [
+                            "key_name" =>$objectId.'||Fieldcollection||'.$fields['field'].'||'.$fields['className'].'||'.$fields['index'].'||'.$key,
+                            "description" => "",
+                            "platforms" => [
+                                "web"
+                            ],
+                            "tags" => [$tag],
+                            "custom_attributes" => [
+                                "type" => "Fieldcollection",
+                                "elementId" => $objectId ,
+                                "mainType" => 'object',
+                            ],
+                            "translations" => $totalTransaltion
+                        ];
+                    }
+                }
+            }
+            $objectBricks = $this->getLokaliseObjectBricksData($object);
+            foreach($objectBricks as  $fields){
+                foreach($fields['keys'] as $key => $field){
+                    if($field){
+                        $totalTransaltion = [];
+                        $engTransaltion = [
+                            "language_iso" => "en",
+                            "translation" =>  $field
+                        ];
+                        $totalTransaltion[] = $engTransaltion;
+                        $locFields[] = [
+                            "key_name" =>$objectId.'||Objectbricks||'.$fields['field'].'||'.$fields['className'].'||'.$fields['index'].'||'.$key,
+                            "description" => "",
+                            "platforms" => [
+                                "web"
+                            ],
+                            "tags" => [$tag],
+                            "custom_attributes" => [
+                                "type" => "Objectbricks",
+                                "elementId" => $objectId ,
+                                "mainType" => 'object',
+                            ],
+                            "translations" => $totalTransaltion
+                        ];
+                    }
+                }
+            }
+      
             
         
             $isExistKeys = [];
@@ -205,6 +329,7 @@ class ObjectController extends FrontendController
         $projectId = ProjectApiService::getProjectIdByName("Objects");
         $translations = $keyApiService->getReviewedTranslation($projectId);
         $objectsIds = [];
+        $deleteLokliaseKeys = [];
         if(!empty($translations)){
             foreach($translations as $keyItem){
                 $is_unverified =(int) $keyItem->is_unverified;
@@ -220,19 +345,70 @@ class ObjectController extends FrontendController
                         
                         $keyNameObject =  $keyData->getKeyName();
                         if($localiseTranslateObject){
-                            $keyNameArray = explode('||',$keyNameObject);
-                            $keyName = $keyNameArray[1];
-                            $itemId = $keyData->getElementId();
-                            $item = DataObject::getById($itemId);
-                            if($item){
-                                if(!in_array($itemId,$objectsIds)){
-                                    $objectsIds[] =  $itemId;
+                            if(strpos($keyNameObject, '||Fieldcollection||') !== false){
+                                $keyNameArray = explode('||',$keyNameObject);
+                                $itemId = $keyData->getElementId();
+                                $fieldCollectionFieldName =  $keyNameArray[2];
+                                $fieldClass = $keyNameArray[3];
+                                $fieldIndex = $keyNameArray[4];
+                                $keyName = $keyNameArray[5];
+                                $item = DataObject::getById($itemId);
+                              
+                                $fieldObject = $item->{'get'.ucfirst($fieldCollectionFieldName)}();
+                                $fieldObjectData = $fieldObject->get((int)$fieldIndex);
+                                if(strpos(get_class($fieldObjectData), $fieldClass) !== false){
+                                    $fieldItem = $fieldObject->get((int)$fieldIndex)->{'set'.ucfirst($keyName)}($translation,$lang);
+                                    $fieldItems = $fieldObject->getItems();
+                                    $fieldItems[(int)$fieldIndex] =  $fieldItem;
+                                    $field =  $fieldObject->setItems($fieldItems);
+                                    $item->{'set'.ucfirst($fieldCollectionFieldName)}($field);
+                                    $item->save();
+                                    if(!in_array($itemId,$objectsIds)){
+                                        $objectsIds[] =  $itemId;
+                                    }
                                 }
-                                $item->set($keyName, $translation, $lang);
-                                $item->save();
+                                else{
+                                    $lokaliseKeyId = $keyData->getKeyId();
+                                    $deleteLokliaseKeys[] = $lokaliseKeyId;
+                                   
+                                }
+                            }
+                            else if(strpos($keyNameObject, '||Objectbricks||') !== false){
+                                $keyNameArray = explode('||',$keyNameObject);
+                                $itemId = $keyData->getElementId();
+                                $objectBrickFieldName =  $keyNameArray[2];
+                                $fieldClass = $keyNameArray[3];
+                                $fieldIndex = $keyNameArray[4];
+                                $keyName = $keyNameArray[5];
+                                $item = DataObject::getById($itemId);
+                                $fieldObject = $item->{'get'.ucfirst($objectBrickFieldName)}();
+                                if($fieldObject){
+                                    $fieldObjectData = $fieldObject->{'get'.ucfirst($fieldClass)}();
+                                    if( $fieldObjectData){
+                                        $fieldObjectData->{'set'.ucfirst($keyName)}($translation,$lang);
+                                        $fieldObject->{'set'.ucfirst($fieldClass)}($fieldObjectData);
+                                        $item->{'set'.ucfirst($objectBrickFieldName)}($fieldObject);
+                                        $item->save();
+                                        if(!in_array($itemId,$objectsIds)){
+                                            $objectsIds[] =  $itemId;
+                                        }
+                                    }
+                                }
+                            }
+                            else{
+                                $keyNameArray = explode('||',$keyNameObject);
+                                $keyName = $keyNameArray[1];
+                                $itemId = $keyData->getElementId();
+                                $item = DataObject::getById($itemId);
+                                if($item){
+                                    if(!in_array($itemId,$objectsIds)){
+                                        $objectsIds[] =  $itemId;
+                                    }
+                                    $item->set($keyName, $translation, $lang);
+                                    $item->save();
+                                }
                             }
                            
-
                             $localiseTranslateObject->setIs_pushed(true);
                             $localiseTranslateObject->setIs_reviewed(true);
                             $localiseTranslateObject->setModified_at_timestamp($keyItem->modified_at_timestamp);
@@ -241,6 +417,9 @@ class ObjectController extends FrontendController
                     }
                 }
             }
+        }
+        if(!empty($deleteLokliaseKeys)){
+            $keyApiService->deleteKeys($projectId,$deleteLokliaseKeys);
         }
         $objectHelper->syncWorkFlowForObjects($objectsIds);
         return new Response('okay');
@@ -323,9 +502,109 @@ class ObjectController extends FrontendController
             }
         }
 
+        $fieldCollections = $this->getLokaliseFieldCollectionData($object);
+        if($fieldCollections){
+            foreach($fieldCollections as  $fields){
+                foreach($fields['keys'] as $key => $field){
+                    if($field){
+                        $totalTransaltion = [];
+                        $keyObject = [
+                            "key_name" =>$objectId.'||Fieldcollection||'.$fields['field'].'||'.$fields['className'].'||'.$fields['index'].'||'.$key,
+                            "description" => "",
+                            "platforms" => [
+                                "web"
+                            ],
+                            "tags" => [$tag],
+                            "custom_attributes" => [
+                                "type" => "",
+                                "elementId" => $objectId ,
+                                "mainType" => 'object'
+                            ]
+                        ];
+                        $keyItem  = LocaliseKeys::getByKeyName($keyObject['key_name']);
+                        if($keyItem != NULL){
+                            $keyObject['key_id'] = $keyItem->getKeyId();
+                            if($keyItem->getKeyValue() != $field){
+                                $totalTransaltion = $languageTranslations;
+                                $engTransaltion = [
+                                    "language_iso" => "en",
+                                    "translation" =>  $field
+                                ];
+                                $totalTransaltion[] = $engTransaltion;
+                                $keyObject['translations'] = $totalTransaltion;
+                                $isExistKeys[] = $keyObject;
+                                $locFields[] = $keyObject;
+                            }
+                        }else{
+                            $totalTransaltion = $languageTranslations;
+                            $engTransaltion = [
+                                "language_iso" => "en",
+                                "translation" =>  $field
+                            ];
+                            $totalTransaltion[] = $engTransaltion;
+                            $keyObject['translations'] = $totalTransaltion;
+                            $newKeys[] = $keyObject;
+                            $locFields[] = $keyObject;
+                        }
+                        
+                    }
+                }
+            }
+        }
+        
+        $objectBricks = $this->getLokaliseObjectBricksData($object);
+        if($objectBricks){
+            foreach($objectBricks as  $fields){
+                foreach($fields['keys'] as $key => $field){
+                    if($field){
+                        $totalTransaltion = [];
+                        $keyObject = [
+                            "key_name" =>$objectId.'||Objectbricks||'.$fields['field'].'||'.$fields['className'].'||'.$fields['index'].'||'.$key,
+                            "description" => "",
+                            "platforms" => [
+                                "web"
+                            ],
+                            "tags" => [$tag],
+                            "custom_attributes" => [
+                                "type" => "Objectbricks",
+                                "elementId" => $objectId ,
+                                "mainType" => 'object'
+                            ]
+                        ];
+                        $keyItem  = LocaliseKeys::getByKeyName($keyObject['key_name']);
+                        if($keyItem != NULL){
+                            $keyObject['key_id'] = $keyItem->getKeyId();
+                            if($keyItem->getKeyValue() != $field){
+                                $totalTransaltion = $languageTranslations;
+                                $engTransaltion = [
+                                    "language_iso" => "en",
+                                    "translation" =>  $field
+                                ];
+                                $totalTransaltion[] = $engTransaltion;
+                                $keyObject['translations'] = $totalTransaltion;
+                                $isExistKeys[] = $keyObject;
+                                $locFields[] = $keyObject;
+                            }
+                        }else{
+                            $totalTransaltion = $languageTranslations;
+                            $engTransaltion = [
+                                "language_iso" => "en",
+                                "translation" =>  $field
+                            ];
+                            $totalTransaltion[] = $engTransaltion;
+                            $keyObject['translations'] = $totalTransaltion;
+                            $newKeys[] = $keyObject;
+                            $locFields[] = $keyObject;
+                        }
+                        
+                    }
+                }
+            }
+        }
+
         if(!empty($newKeys)){
             $newcontent = $keyApiService->createKeys($projectId,$newKeys);
-
+      
             $keysResponse = $newcontent->keys;
             if(!empty($keysResponse)){
                 foreach($keysResponse as $keyItem){
@@ -344,6 +623,7 @@ class ObjectController extends FrontendController
                 
                 }
             }
+
         }
 
         if(!empty($isExistKeys)){
@@ -426,9 +706,6 @@ class ObjectController extends FrontendController
 
         return new Response('okay');
     }
-
-
-   
 
 
 
