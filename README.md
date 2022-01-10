@@ -6,6 +6,14 @@ Automatically translate and review your content via Lokalise
 # Overview
 This extension will work as a bridge between Pimcore and Lokalise for the purpose of automating the whole translation workflow. Thus eliminating most of the manual steps in the task along with availing quality translation-review service from Lokalise.
 
+# Features
+
+- Translation & Review - Data Objects, Documents, and Shared Translation
+- Workflow management
+- Translation progress tracking
+- Works with Bulk Objects - Push and Pull for Translation
+- Auto push on publish event in Document and Object (New)
+
 # Requirements
 * Pimcore 5.8 or 6.x
 
@@ -83,6 +91,13 @@ There are two jobs for that
 2. Sync keys job ( Pull Shared translation)
 It will generate/update and sync with Lokalise with those jobs.
 
+# Auto push in document and object
+
+Steps to enable auto push 
+1. Goto website settings
+2. Add lokalise_auto_push setting with checkbox type 
+3. Enable lokalise_auto_push
+![image](https://user-images.githubusercontent.com/30948231/148781097-588fd648-408f-437c-85af-89283c899225.png)
 
 # List of jobs
 
