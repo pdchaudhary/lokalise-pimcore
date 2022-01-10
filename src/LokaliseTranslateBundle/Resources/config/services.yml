@@ -31,6 +31,17 @@ services:
         arguments:   
             $bundle: "@=service('kernel').getBundle('LokaliseTranslateBundle')"
 
+    Pdchaudhary\LokaliseTranslateBundle\EventListener\ObjectListener:
+        public: true
+        tags:
+            - { name: kernel.event_listener, event: pimcore.dataobject.postUpdate, method: onPostUpdate }
+    
+    Pdchaudhary\LokaliseTranslateBundle\EventListener\DocumentListener:
+        public: true
+        tags:
+            - { name: kernel.event_listener, event: pimcore.document.postUpdate, method: onPostUpdate }
+
+
     
         
 

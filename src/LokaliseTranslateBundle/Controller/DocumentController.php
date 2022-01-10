@@ -92,16 +92,20 @@ class DocumentController extends FrontendController
             $lang = $language[0];
             $parentPath = $documentData['parent'.$lang]; 
             $parentEl = Document\Service::getByUrl($parentPath);
-            $translateDocument = new TranslateDocument();
-            $translateDocument->setParentDocumentId($documentData['translateDocId']);
-            $translateDocument->setLanguage($lang);
-            $translateDocument->setParentId($parentEl->getId());
-            $translateDocument->setKey($documentData['key'.$lang]);
-            $translateDocument->setNavigation($documentData['name'.$lang]);
-            $translateDocument->setTitle($documentData['title'.$lang]);
-            $translateDocument->setStatus('new');
-            $translateDocument->setIsCreated(0);
-            $translateDocument->save();
+            if($parentEl){
+                $translateDocument = new TranslateDocument();
+                $translateDocument->setParentDocumentId($documentData['translateDocId']);
+                $translateDocument->setLanguage($lang);
+                $translateDocument->setParentId($parentEl->getId());
+                $translateDocument->setKey($documentData['key'.$lang]);
+                $translateDocument->setNavigation($documentData['name'.$lang]);
+                $translateDocument->setTitle($documentData['title'.$lang]);
+                $translateDocument->setStatus('new');
+                $translateDocument->setIsCreated(0);
+                $translateDocument->save();
+            }else{
+                throw new \Exception("Parent document is not found for path :".$parentPath);
+            }
 
             foreach($keys['keys'] as $key){
                 $keyItem  = LocaliseKeys::getByKeyName($key['key_name']);
@@ -461,9 +465,15 @@ class DocumentController extends FrontendController
      */
     public function multiLanguageUpdation(Request $request, KeyApiService $keyApiService,DocumentHelper $documentHelper,WorkflowHelper $workflowHelper){
         set_time_limit (600);
-        $projectId = ProjectApiService::getProjectIdByName("Documents");
         $documentId = $request->get("documentId");
+        $this->pushDocumentKeyOnUpdate($documentId, $keyApiService, $documentHelper, $workflowHelper);
+        return new Response('okay');
+    }
+
+
+    public function pushDocumentKeyOnUpdate($documentId, KeyApiService $keyApiService,DocumentHelper $documentHelper,WorkflowHelper $workflowHelper ){
         $languages = Languages::getLanguages();
+        $projectId = ProjectApiService::getProjectIdByName("Documents");
         $isExistKeys = [];
         $newKeys = [];
         $totalKeys = [];
@@ -566,8 +576,8 @@ class DocumentController extends FrontendController
         if($objectItem){
             $workflowHelper->applyWorkFlow(DocumentHelper::WORKFLOWNAME, $objectItem, 'Updated');
         }
-        return new Response('okay');
     }
+
 
 
      /** 
@@ -603,6 +613,14 @@ class DocumentController extends FrontendController
     */
     public function isAllowedToUpdate(Request $request){
         $documentId = $request->get("documentId");
+        $status = $this->toCheckAllowUpdate($documentId);
+        return JsonResponse::create([
+            "status" => $status,
+        ]);
+
+    }
+
+    public function toCheckAllowUpdate($documentId){
         $list = new TranslateDocument\Listing();
         $list->setCondition("parentDocumentId = ?", $documentId);
         $documents = $list->load();
@@ -610,10 +628,7 @@ class DocumentController extends FrontendController
         if(count($documents) > 0){
             $status = true;
         }
-        return JsonResponse::create([
-            "status" => $status,
-        ]);
-
+        return $status;
     }
 
     
