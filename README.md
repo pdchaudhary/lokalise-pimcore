@@ -97,6 +97,7 @@ Steps to enable auto push
 1. Goto website settings
 2. Add lokalise_auto_push setting with checkbox type 
 3. Enable lokalise_auto_push
+
 ![image](https://user-images.githubusercontent.com/30948231/148781097-588fd648-408f-437c-85af-89283c899225.png)
 
 # List of jobs
