@@ -355,22 +355,28 @@ class ObjectController extends FrontendController
                                 $item = DataObject::getById($itemId);
                               
                                 $fieldObject = $item->{'get'.ucfirst($fieldCollectionFieldName)}();
-                                $fieldObjectData = $fieldObject->get((int)$fieldIndex);
-                                if(strpos(get_class($fieldObjectData), $fieldClass) !== false){
-                                    $fieldItem = $fieldObject->get((int)$fieldIndex)->{'set'.ucfirst($keyName)}($translation,$lang);
-                                    $fieldItems = $fieldObject->getItems();
-                                    $fieldItems[(int)$fieldIndex] =  $fieldItem;
-                                    $field =  $fieldObject->setItems($fieldItems);
-                                    $item->{'set'.ucfirst($fieldCollectionFieldName)}($field);
-                                    $item->save();
-                                    if(!in_array($itemId,$objectsIds)){
-                                        $objectsIds[] =  $itemId;
+                                if($fieldObject) {
+                                    $fieldObjectData = $fieldObject->get((int)$fieldIndex);
+                                    if(strpos(get_class($fieldObjectData), $fieldClass) !== false){
+                                        $fieldItem = $fieldObject->get((int)$fieldIndex)->{'set'.ucfirst($keyName)}($translation,$lang);
+                                        $fieldItems = $fieldObject->getItems();
+                                        $fieldItems[(int)$fieldIndex] =  $fieldItem;
+                                        $field =  $fieldObject->setItems($fieldItems);
+                                        $item->{'set'.ucfirst($fieldCollectionFieldName)}($field);
+                                        $item->save();
+                                        if(!in_array($itemId,$objectsIds)){
+                                            $objectsIds[] =  $itemId;
+                                        }
                                     }
-                                }
-                                else{
+                                    else{
+                                        $lokaliseKeyId = $keyData->getKeyId();
+                                        $deleteLokliaseKeys[] = $lokaliseKeyId;
+                                    
+                                    }
+                                }else{
                                     $lokaliseKeyId = $keyData->getKeyId();
                                     $deleteLokliaseKeys[] = $lokaliseKeyId;
-                                   
+                                
                                 }
                             }
                             else if(strpos($keyNameObject, '||Objectbricks||') !== false){
