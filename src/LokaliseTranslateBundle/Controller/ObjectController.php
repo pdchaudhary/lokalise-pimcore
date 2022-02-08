@@ -353,22 +353,27 @@ class ObjectController extends FrontendController
                                 $fieldIndex = $keyNameArray[4];
                                 $keyName = $keyNameArray[5];
                                 $item = DataObject::getById($itemId);
-                              
-                                $fieldObject = $item->{'get'.ucfirst($fieldCollectionFieldName)}();
-                                if($fieldObject) {
-                                    $fieldObjectData = $fieldObject->get((int)$fieldIndex);
-                                    if(strpos(get_class($fieldObjectData), $fieldClass) !== false){
-                                        $fieldItem = $fieldObject->get((int)$fieldIndex)->{'set'.ucfirst($keyName)}($translation,$lang);
-                                        $fieldItems = $fieldObject->getItems();
-                                        $fieldItems[(int)$fieldIndex] =  $fieldItem;
-                                        $field =  $fieldObject->setItems($fieldItems);
-                                        $item->{'set'.ucfirst($fieldCollectionFieldName)}($field);
-                                        $item->save();
-                                        if(!in_array($itemId,$objectsIds)){
-                                            $objectsIds[] =  $itemId;
+                                if(method_exists($item, 'get'.ucfirst($fieldCollectionFieldName))){
+                                    $fieldObject = $item->{'get'.ucfirst($fieldCollectionFieldName)}();
+                                    if($fieldObject) {
+                                        $fieldObjectData = $fieldObject->get((int)$fieldIndex);
+                                        if(strpos(get_class($fieldObjectData), $fieldClass) !== false){
+                                            $fieldItem = $fieldObject->get((int)$fieldIndex)->{'set'.ucfirst($keyName)}($translation,$lang);
+                                            $fieldItems = $fieldObject->getItems();
+                                            $fieldItems[(int)$fieldIndex] =  $fieldItem;
+                                            $field =  $fieldObject->setItems($fieldItems);
+                                            $item->{'set'.ucfirst($fieldCollectionFieldName)}($field);
+                                            $item->save();
+                                            if(!in_array($itemId,$objectsIds)){
+                                                $objectsIds[] =  $itemId;
+                                            }
                                         }
-                                    }
-                                    else{
+                                        else{
+                                            $lokaliseKeyId = $keyData->getKeyId();
+                                            $deleteLokliaseKeys[] = $lokaliseKeyId;
+                                        
+                                        }
+                                    }else{
                                         $lokaliseKeyId = $keyData->getKeyId();
                                         $deleteLokliaseKeys[] = $lokaliseKeyId;
                                     
@@ -376,7 +381,7 @@ class ObjectController extends FrontendController
                                 }else{
                                     $lokaliseKeyId = $keyData->getKeyId();
                                     $deleteLokliaseKeys[] = $lokaliseKeyId;
-                                
+
                                 }
                             }
                             else if(strpos($keyNameObject, '||Objectbricks||') !== false){
@@ -387,16 +392,20 @@ class ObjectController extends FrontendController
                                 $fieldIndex = $keyNameArray[4];
                                 $keyName = $keyNameArray[5];
                                 $item = DataObject::getById($itemId);
-                                $fieldObject = $item->{'get'.ucfirst($objectBrickFieldName)}();
-                                if($fieldObject){
-                                    $fieldObjectData = $fieldObject->{'get'.ucfirst($fieldClass)}();
-                                    if( $fieldObjectData){
-                                        $fieldObjectData->{'set'.ucfirst($keyName)}($translation,$lang);
-                                        $fieldObject->{'set'.ucfirst($fieldClass)}($fieldObjectData);
-                                        $item->{'set'.ucfirst($objectBrickFieldName)}($fieldObject);
-                                        $item->save();
-                                        if(!in_array($itemId,$objectsIds)){
-                                            $objectsIds[] =  $itemId;
+                                if(method_exists($item, 'get'.ucfirst($objectBrickFieldName))){
+                                    $fieldObject = $item->{'get'.ucfirst($objectBrickFieldName)}();
+                                    if($fieldObject){
+                                        if(method_exists($fieldObject, 'get'.ucfirst($fieldClass))){
+                                            $fieldObjectData = $fieldObject->{'get'.ucfirst($fieldClass)}();
+                                            if( $fieldObjectData){
+                                                $fieldObjectData->{'set'.ucfirst($keyName)}($translation,$lang);
+                                                $fieldObject->{'set'.ucfirst($fieldClass)}($fieldObjectData);
+                                                $item->{'set'.ucfirst($objectBrickFieldName)}($fieldObject);
+                                                $item->save();
+                                                if(!in_array($itemId,$objectsIds)){
+                                                    $objectsIds[] =  $itemId;
+                                                }
+                                            }
                                         }
                                     }
                                 }
