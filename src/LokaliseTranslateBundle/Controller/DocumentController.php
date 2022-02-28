@@ -194,12 +194,16 @@ class DocumentController extends FrontendController
                     if(NULL != $keyData){
                         $keyObjectId = $keyData->getId();
                         $localiseTranslateObject = TranslateKeys::getByKeyIdAndLang($keyObjectId,$lang); 
-                        if($localiseTranslateObject){
+                        if($localiseTranslateObject && $localiseTranslateObject->getModified_at_timestamp() < $keyItem->modified_at_timestamp){
                             $localiseTranslateObject->setIs_pushed(false);
                             $localiseTranslateObject->setIs_reviewed(true);
                             $localiseTranslateObject->setValueData($translation);
                             $localiseTranslateObject->setModified_at_timestamp($keyItem->modified_at_timestamp);
                             $localiseTranslateObject->save();
+                            $translateDocument = TranslateDocument::getById($localiseTranslateObject->getTranslate_document_id());
+                            $translateDocument->setStatus("update");
+                            $translateDocument->save();
+
                         }
                     }
                 }
@@ -236,6 +240,7 @@ class DocumentController extends FrontendController
 
     public function updateDocuments($workflowHelper){
         $translateDocuments = TranslateDocument\Listing::getDocumentList(1,'update');
+
         foreach($translateDocuments as $translateDocument){
             $translateDocumentId = $translateDocument->getId();
             $isDocumentReviewed = $this->isDocumentReviewed($translateDocumentId);
