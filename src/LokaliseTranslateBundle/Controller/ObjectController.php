@@ -352,6 +352,7 @@ class ObjectController extends FrontendController
                                 $fieldClass = $keyNameArray[3];
                                 $fieldIndex = $keyNameArray[4];
                                 $keyName = $keyNameArray[5];
+                                \Pimcore\Logger::warn("Lokalise Object sync started:".$itemId);
                                 $item = DataObject::getById($itemId);
                                 if(method_exists($item, 'get'.ucfirst($fieldCollectionFieldName))){
                                     $fieldObject = $item->{'get'.ucfirst($fieldCollectionFieldName)}();
@@ -391,6 +392,7 @@ class ObjectController extends FrontendController
                                 $fieldClass = $keyNameArray[3];
                                 $fieldIndex = $keyNameArray[4];
                                 $keyName = $keyNameArray[5];
+                                \Pimcore\Logger::warn("Lokalise Object sync started:".$itemId);
                                 $item = DataObject::getById($itemId);
                                 if(method_exists($item, 'get'.ucfirst($objectBrickFieldName))){
                                     $fieldObject = $item->{'get'.ucfirst($objectBrickFieldName)}();
@@ -415,6 +417,7 @@ class ObjectController extends FrontendController
                                 $keyName = $keyNameArray[1];
                                 $itemId = $keyData->getElementId();
                                 $item = DataObject::getById($itemId);
+                                \Pimcore\Logger::warn("Lokalise Object sync started:".$itemId);
                                 if($item){
                                     if(!in_array($itemId,$objectsIds)){
                                         $objectsIds[] =  $itemId;
