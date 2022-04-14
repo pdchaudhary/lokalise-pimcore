@@ -358,7 +358,7 @@ class ObjectController extends FrontendController
                                     $fieldObject = $item->{'get'.ucfirst($fieldCollectionFieldName)}();
                                     if($fieldObject) {
                                         $fieldObjectData = $fieldObject->get((int)$fieldIndex);
-                                        if(strpos(get_class($fieldObjectData), $fieldClass) !== false){
+                                        if($fieldObjectData && strpos(get_class($fieldObjectData), $fieldClass) !== false){
                                             $fieldItem = $fieldObject->get((int)$fieldIndex)->{'set'.ucfirst($keyName)}($translation,$lang);
                                             $fieldItems = $fieldObject->getItems();
                                             $fieldItems[(int)$fieldIndex] =  $fieldItem;
