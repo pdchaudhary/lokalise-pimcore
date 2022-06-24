@@ -271,9 +271,11 @@ class DocumentController extends FrontendController
         $parentDocument = Document::getById(intval($translateDocument->getParentId()));
         $intendedPath = $parentDocument->getRealFullPath() . '/' . $translateDocument->getKey();
         $document =  Document::getByPath($intendedPath);
-        if(NULL != $document && $translatedKeys){
+        $translateDoc = Document::getById($translateDocument->getParentDocumentId());
+        if(NULL != $document && $translatedKeys && $translateDoc){
             $newDoc = Document::getById($document->getId());
-            $translateDoc = Document::getById($translateDocument->getParentDocumentId());
+            
+            
             $newDoc->setEditables($translateDoc->getEditables());
 
             foreach ($translatedKeys as $key => $element) {
@@ -413,11 +415,11 @@ class DocumentController extends FrontendController
 
                 $service = new Document\Service();
                 $service->addTranslation($translationsBaseDocument, $document);
-
-                if ($translatedKeys) {
+                $translateDoc = Document::getById($translateDocument->getParentDocumentId());
+                if ($translatedKeys && $translateDoc) {
 
                     $newDoc = Document::getById($document->getId());
-                    $translateDoc = Document::getById($translateDocument->getParentDocumentId());
+                   
 
 
                     $newDoc->setEditables($translateDoc->getEditables());
