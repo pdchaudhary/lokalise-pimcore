@@ -119,6 +119,9 @@ class KeyApiService extends BaseApiService{
                     }  
                 }
                 $localiseKeys = new LocaliseKeys();
+                if(empty($elementId)){
+                    $elementId = 0;
+                }
                 $localiseKeys->setElementId($elementId); 
                 $localiseKeys->setKeyName($key->key_name->web); 
                 $localiseKeys->setKeyId($keyId);
