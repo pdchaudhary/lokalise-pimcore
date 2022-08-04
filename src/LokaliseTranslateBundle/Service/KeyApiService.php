@@ -122,11 +122,15 @@ class KeyApiService extends BaseApiService{
                 if(empty($elementId)){
                     $elementId = 0;
                 }
+                if(empty($mainType)){
+                    $mainType = $projectType;
+                }
                 $localiseKeys->setElementId($elementId); 
                 $localiseKeys->setKeyName($key->key_name->web); 
                 $localiseKeys->setKeyId($keyId);
                 $localiseKeys->setKeyValue($enTransaltionValue);
                 $localiseKeys->setFieldType($fieldType);
+
                 $localiseKeys->setType($mainType);
                 $localiseKeys->save();
             }
