@@ -135,7 +135,7 @@ class ObjectController extends FrontendController
                 $objectId = $object->getId();
                 $tag =  $object->getKey();
                 foreach($fields as $key => $field){
-                    if($field){
+                    if($field && is_string($field) ){
                         $totalTransaltion = [];
                         $engTransaltion = [
                             "language_iso" => "en",
@@ -164,7 +164,7 @@ class ObjectController extends FrontendController
             
                 foreach($fieldCollections as  $fields){
                     foreach($fields['keys'] as $key => $field){
-                        if($field){
+                        if($field && is_string($field) ){
                             $totalTransaltion = [];
                             $engTransaltion = [
                                 "language_iso" => "en",
@@ -191,7 +191,7 @@ class ObjectController extends FrontendController
                 $objectBricks = $this->getLokaliseObjectBricksData($object);
                 foreach($objectBricks as  $fields){
                     foreach($fields['keys'] as $key => $field){
-                        if($field){
+                        if($field && is_string($field)){
                             $totalTransaltion = [];
                             $engTransaltion = [
                                 "language_iso" => "en",
@@ -480,7 +480,7 @@ class ObjectController extends FrontendController
 
 
         foreach($fields as $key => $field){
-            if($field){
+            if($field && is_string($field)){
                 $totalTransaltion = [];
                 $keyObject = [
                     "key_name" =>$objectId.'||'.$key,
@@ -531,7 +531,7 @@ class ObjectController extends FrontendController
         if($fieldCollections){
             foreach($fieldCollections as  $fields){
                 foreach($fields['keys'] as $key => $field){
-                    if($field){
+                    if($field && is_string($field)){
                         $totalTransaltion = [];
                         $keyObject = [
                             "key_name" =>$objectId.'||Fieldcollection||'.$fields['field'].'||'.$fields['className'].'||'.$fields['index'].'||'.$key,
@@ -581,7 +581,7 @@ class ObjectController extends FrontendController
         if($objectBricks){
             foreach($objectBricks as  $fields){
                 foreach($fields['keys'] as $key => $field){
-                    if($field){
+                    if($field && is_string($field)){
                         $totalTransaltion = [];
                         $keyObject = [
                             "key_name" =>$objectId.'||Objectbricks||'.$fields['field'].'||'.$fields['className'].'||'.$fields['index'].'||'.$key,
