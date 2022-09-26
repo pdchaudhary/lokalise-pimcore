@@ -272,7 +272,8 @@ class DocumentController extends FrontendController
         $intendedPath = $parentDocument->getRealFullPath() . '/' . $translateDocument->getKey();
         $document =  Document::getByPath($intendedPath);
         $translateDoc = Document::getById($translateDocument->getParentDocumentId());
-        if(NULL != $document && $translatedKeys && $translateDoc){
+        if(NULL != $document && $translatedKeys && $translateDoc
+        && method_exists($translateDoc,'getEditables') ){
             $newDoc = Document::getById($document->getId());
             
             
@@ -416,7 +417,7 @@ class DocumentController extends FrontendController
                 $service = new Document\Service();
                 $service->addTranslation($translationsBaseDocument, $document);
                 $translateDoc = Document::getById($translateDocument->getParentDocumentId());
-                if ($translatedKeys && $translateDoc) {
+                if ($translatedKeys && $translateDoc  && method_exists($translateDoc,'getEditables')) {
 
                     $newDoc = Document::getById($document->getId());
                    
