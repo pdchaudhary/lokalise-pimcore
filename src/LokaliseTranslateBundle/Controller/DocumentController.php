@@ -276,30 +276,31 @@ class DocumentController extends FrontendController
         && method_exists($translateDoc,'getEditables') ){
             $newDoc = Document::getById($document->getId());
             
-            
-            $newDoc->setEditables($translateDoc->getEditables());
+            if( $newDoc && method_exists($newDoc,'setEditables') ){
+                $newDoc->setEditables($translateDoc->getEditables());
 
-            foreach ($translatedKeys as $key => $element) {
-                         
-                $keyItem  = LocaliseKeys::getById($element->getLocalise_key_id());
+                foreach ($translatedKeys as $key => $element) {
+                            
+                    $keyItem  = LocaliseKeys::getById($element->getLocalise_key_id());
 
-                if(null != $keyItem){
-                    $fieldType = $keyItem->getFieldType();
-                    $keyNameObject =  $keyItem->getKeyName();
-                    $keyNameArray = explode('||',$keyNameObject);
-                    $keyName = $keyNameArray[1];
-                    if(null != $fieldType){
-                      
-                        $newDoc->setRawEditable($keyName, $fieldType, $element->getValueData());
+                    if(null != $keyItem){
+                        $fieldType = $keyItem->getFieldType();
+                        $keyNameObject =  $keyItem->getKeyName();
+                        $keyNameArray = explode('||',$keyNameObject);
+                        $keyName = $keyNameArray[1];
+                        if(null != $fieldType){
+                        
+                            $newDoc->setRawEditable($keyName, $fieldType, $element->getValueData());
+                        }
+                    }else{
+                        
+                        $errorMessage = "Key is not found in table";
+                        Logger::debug($errorMessage);
                     }
-                }else{
-                    
-                    $errorMessage = "Key is not found in table";
-                    Logger::debug($errorMessage);
                 }
+                $newDoc->save();
+                $workflowHelper->applyWorkFlow(DocumentHelper::WORKFLOWNAME, $newDoc, 'Verified');
             }
-            $newDoc->save();
-            $workflowHelper->applyWorkFlow(DocumentHelper::WORKFLOWNAME, $newDoc, 'Verified');
             
 
         }
@@ -422,31 +423,32 @@ class DocumentController extends FrontendController
                     $newDoc = Document::getById($document->getId());
                    
 
+                    if( $newDoc && method_exists($newDoc,'setEditables') ){
+                        $newDoc->setEditables($translateDoc->getEditables());
 
-                    $newDoc->setEditables($translateDoc->getEditables());
+                    
 
-                   
-
-                    foreach ($translatedKeys as $key => $element) {
-                         
-                        $keyItem  = LocaliseKeys::getById($element->getLocalise_key_id());
-                        
-                        if(null != $keyItem){
-                            $fieldType = $keyItem->getFieldType();
-                            $keyNameObject =  $keyItem->getKeyName();
-                            $keyNameArray = explode('||',$keyNameObject);
-                            $keyName = $keyNameArray[1];
-                            if(null != $fieldType){
-                                $newDoc->setRawEditable($keyName, $fieldType, $element->getValueData());
+                        foreach ($translatedKeys as $key => $element) {
+                            
+                            $keyItem  = LocaliseKeys::getById($element->getLocalise_key_id());
+                            
+                            if(null != $keyItem){
+                                $fieldType = $keyItem->getFieldType();
+                                $keyNameObject =  $keyItem->getKeyName();
+                                $keyNameArray = explode('||',$keyNameObject);
+                                $keyName = $keyNameArray[1];
+                                if(null != $fieldType){
+                                    $newDoc->setRawEditable($keyName, $fieldType, $element->getValueData());
+                                }
+                            }else{
+                                $errorMessage = "Key is not found in table";
+                                Logger::debug($errorMessage);
                             }
-                        }else{
-                            $errorMessage = "Key is not found in table";
-                            Logger::debug($errorMessage);
                         }
-                    }
 
-                    $newDoc->save();
-                    $workflowHelper->applyWorkFlow(DocumentHelper::WORKFLOWNAME, $newDoc, 'Verified');
+                        $newDoc->save();
+                        $workflowHelper->applyWorkFlow(DocumentHelper::WORKFLOWNAME, $newDoc, 'Verified');
+                    }
 
                 }
             }
