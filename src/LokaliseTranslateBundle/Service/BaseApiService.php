@@ -94,9 +94,16 @@ class BaseApiService {
             throw new \Exception($result->error->message);
         }
         if(!empty($result->errors)){
-            $keyApiService = new KeyApiService();
-            $keyApiService->syncUpAllKeysWithDb();
-            throw new \Exception("Some keys were not found in database. Database is now synced, please try again.");
+            if($result->errors && $result->errors[0]->message == 'Translations `language_iso` parameter is expected to be one of project defined languages'){
+                $projectApiService = new ProjectApiService();
+                $projectApiService->createProjectOnLokalise();
+                throw new \Exception("New language_iso found for key and it is not on lokalise.New language_iso is created and now please try again.");
+            }else{
+                $keyApiService = new KeyApiService();
+                $keyApiService->syncUpAllKeysWithDb();
+                throw new \Exception("Some keys were not found in database. Database is now synced, please try again.");
+
+            }
         }
     }
 

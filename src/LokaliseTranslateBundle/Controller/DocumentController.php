@@ -24,6 +24,8 @@ use Pimcore\Logger;
 use Pdchaudhary\LokaliseTranslateBundle\Service\Languages;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Pdchaudhary\LokaliseTranslateBundle\Service\WorkflowHelper;
+use Elements\Bundle\ProcessManagerBundle\Helper;
+use Elements\Bundle\ProcessManagerBundle\Model\Configuration;
 
 class DocumentController extends FrontendController
 {
@@ -476,7 +478,21 @@ class DocumentController extends FrontendController
     public function multiLanguageUpdation(Request $request, KeyApiService $keyApiService,DocumentHelper $documentHelper,WorkflowHelper $workflowHelper){
         set_time_limit (600);
         $documentId = $request->get("documentId");
-        $this->pushDocumentKeyOnUpdate($documentId, $keyApiService, $documentHelper, $workflowHelper);
+        $cmdName = 'Document Update Sync Command';
+        $config = Configuration::getByName($cmdName,1);
+        if($config){
+            $executorClass = $config[0]->getExecutorSettings();
+            $jsonValue = json_decode($executorClass);
+            $jsonValue->values->commandOptions = trim($documentId);
+            $executorClass = json_encode($jsonValue);
+            $config[0]->setExecutorSettings($executorClass);
+            $config[0]->save();
+            $result = Helper::executeJob($config[0]->getId(), [],1);
+        }else{
+            $this->pushDocumentKeyOnUpdate($documentId, $keyApiService, $documentHelper, $workflowHelper);
+        }
+        
+      
         return new Response('okay');
     }
 
