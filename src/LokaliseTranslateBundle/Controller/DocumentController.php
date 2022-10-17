@@ -487,7 +487,11 @@ class DocumentController extends FrontendController
             $executorClass = json_encode($jsonValue);
             $config[0]->setExecutorSettings($executorClass);
             $config[0]->save();
-            $result = Helper::executeJob($config[0]->getId(), [],1);
+            $userId = 3;
+            if ($user = \Pimcore\Tool\Admin::getCurrentUser() ) {
+                $userId = $user->getId();
+            }
+            $result = Helper::executeJob($config[0]->getId(), [], $userId);
         }else{
             $this->pushDocumentKeyOnUpdate($documentId, $keyApiService, $documentHelper, $workflowHelper);
         }
