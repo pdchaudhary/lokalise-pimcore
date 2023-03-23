@@ -262,49 +262,53 @@ class DocumentController extends FrontendController
 
     public function setWorkflowAwaitingPull($translateDocument,$workflowHelper){
         $parentDocument = Document::getById(intval($translateDocument->getParentId()));
-        $intendedPath = $parentDocument->getRealFullPath() . '/' . $translateDocument->getKey();
-        $document =  Document::getByPath($intendedPath);
-        if($document){
-            $workflowHelper->applyWorkFlow(DocumentHelper::WORKFLOWNAME, $document, 'Awaiting Pull');
+        if($parentDocument){
+            $intendedPath = $parentDocument->getRealFullPath() . '/' . $translateDocument->getKey();
+            $document =  Document::getByPath($intendedPath);
+            if($document){
+                $workflowHelper->applyWorkFlow(DocumentHelper::WORKFLOWNAME, $document, 'Awaiting Pull');
+            }
         }
     }
 
     public function fetchAndUpdateDocument($translateDocument, $translatedKeys,$workflowHelper){
         $parentDocument = Document::getById(intval($translateDocument->getParentId()));
-        $intendedPath = $parentDocument->getRealFullPath() . '/' . $translateDocument->getKey();
-        $document =  Document::getByPath($intendedPath);
-        $translateDoc = Document::getById($translateDocument->getParentDocumentId());
-        if(NULL != $document && $translatedKeys && $translateDoc
-        && method_exists($translateDoc,'getEditables') ){
-            $newDoc = Document::getById($document->getId());
-            
-            if( $newDoc && method_exists($newDoc,'setEditables') ){
-                $newDoc->setEditables($translateDoc->getEditables());
+        if( $parentDocument){
+            $intendedPath = $parentDocument->getRealFullPath() . '/' . $translateDocument->getKey();
+            $document =  Document::getByPath($intendedPath);
+            $translateDoc = Document::getById($translateDocument->getParentDocumentId());
+            if(NULL != $document && $translatedKeys && $translateDoc
+            && method_exists($translateDoc,'getEditables') ){
+                $newDoc = Document::getById($document->getId());
+                
+                if( $newDoc && method_exists($newDoc,'setEditables') ){
+                    $newDoc->setEditables($translateDoc->getEditables());
 
-                foreach ($translatedKeys as $key => $element) {
+                    foreach ($translatedKeys as $key => $element) {
+                                
+                        $keyItem  = LocaliseKeys::getById($element->getLocalise_key_id());
+
+                        if(null != $keyItem){
+                            $fieldType = $keyItem->getFieldType();
+                            $keyNameObject =  $keyItem->getKeyName();
+                            $keyNameArray = explode('||',$keyNameObject);
+                            $keyName = $keyNameArray[1];
+                            if(null != $fieldType){
                             
-                    $keyItem  = LocaliseKeys::getById($element->getLocalise_key_id());
-
-                    if(null != $keyItem){
-                        $fieldType = $keyItem->getFieldType();
-                        $keyNameObject =  $keyItem->getKeyName();
-                        $keyNameArray = explode('||',$keyNameObject);
-                        $keyName = $keyNameArray[1];
-                        if(null != $fieldType){
-                        
-                            $newDoc->setRawEditable($keyName, $fieldType, $element->getValueData());
+                                $newDoc->setRawEditable($keyName, $fieldType, $element->getValueData());
+                            }
+                        }else{
+                            
+                            $errorMessage = "Key is not found in table";
+                            Logger::debug($errorMessage);
                         }
-                    }else{
-                        
-                        $errorMessage = "Key is not found in table";
-                        Logger::debug($errorMessage);
                     }
+                    $newDoc->save();
+                    $workflowHelper->applyWorkFlow(DocumentHelper::WORKFLOWNAME, $newDoc, 'Verified');
                 }
-                $newDoc->save();
-                $workflowHelper->applyWorkFlow(DocumentHelper::WORKFLOWNAME, $newDoc, 'Verified');
-            }
-            
+                
 
+            }
         }
         return true;
 
@@ -333,77 +337,83 @@ class DocumentController extends FrontendController
        
         $mainDocument =  Document::getById(intval($translateDocument->getParentDocumentId()));
         $parentDocument = Document::getById(intval($translateDocument->getParentId()));
+        if($parentDocument){
+            $intendedPath = $parentDocument->getRealFullPath() . '/' . $translateDocument->getKey();
+        
+        
 
-        $intendedPath = $parentDocument->getRealFullPath() . '/' . $translateDocument->getKey();
+            if (!Document\Service::pathExists($intendedPath)) {
+                $createValues = [
+                    'userOwner' => 1,
+                    'userModification' => 1,
+                    'published' => false
+                ];
 
-        if (!Document\Service::pathExists($intendedPath)) {
-            $createValues = [
-                'userOwner' => 1,
-                'userModification' => 1,
-                'published' => false
-            ];
-
-            $createValues['key'] = \Pimcore\Model\Element\Service::getValidKey($translateDocument->getKey(), 'document');
-            $translationsBaseDocument = Document::getById($translateDocument->getParentDocumentId());
-            if ($translateDocument->getParentDocumentId() && $translationsBaseDocument) {
+                $createValues['key'] = \Pimcore\Model\Element\Service::getValidKey($translateDocument->getKey(), 'document');
+                $translationsBaseDocument = Document::getById($translateDocument->getParentDocumentId());
+                if ($translateDocument->getParentDocumentId() && $translationsBaseDocument) {
+                    
+                    $createValues['template'] = $translationsBaseDocument->getTemplate();
+                    $createValues['controller'] = $translationsBaseDocument->getController();
                 
-                $createValues['template'] = $translationsBaseDocument->getTemplate();
-                $createValues['controller'] = $translationsBaseDocument->getController();
-              
-               
-            } elseif ($mainDocument && ($mainDocument->getType() == 'page' || $mainDocument->getType() == 'snippet' || $mainDocument->getType() == 'email')) {
-                $createValues += Tool::getRoutingDefaults();
-            }
-            if($mainDocument){
-                switch ($mainDocument->getType()) {
-                    case 'page':
-                        $document = Document\Page::create($translateDocument->getParentId(), $createValues, false);
-                        $document->setTitle($translateDocument->getTitle());
-                        $document->setProperty('navigation_name', 'text', $translateDocument->getNavigation(), false);
-                        $document->save();
-                        $success = true;
-                        break;
-                    case 'snippet':
-                        $document = Document\Snippet::create($translateDocument->getParentId(), $createValues);
-                        $success = true;
-                        break;
-                    case 'printpage':
-                        $document = Document\Printpage::create($translateDocument->getParentId(), $createValues);
-                        $success = true;
-                        break;
+                
+                } elseif ($mainDocument && ($mainDocument->getType() == 'page' || $mainDocument->getType() == 'snippet' || $mainDocument->getType() == 'email')) {
+                    $createValues += Tool::getRoutingDefaults();
+                }
+                if($mainDocument){
+                    switch ($mainDocument->getType()) {
+                        case 'page':
+                            $document = Document\Page::create($translateDocument->getParentId(), $createValues, false);
+                            $document->setTitle($translateDocument->getTitle());
+                            $document->setProperty('navigation_name', 'text', $translateDocument->getNavigation(), false);
+                            $document->save();
+                            $success = true;
+                            break;
+                        case 'snippet':
+                            $document = Document\Snippet::create($translateDocument->getParentId(), $createValues);
+                            $success = true;
+                            break;
+                        case 'printpage':
+                            $document = Document\Printpage::create($translateDocument->getParentId(), $createValues);
+                            $success = true;
+                            break;
 
-                    default:
-                        $classname = '\\Pimcore\\Model\\Document\\' . ucfirst($mainDocument->getType());
+                        default:
+                            $classname = '\\Pimcore\\Model\\Document\\' . ucfirst($mainDocument->getType());
 
-                        // this is the fallback for custom document types using prefixes
-                        // so we need to check if the class exists first
-                        if (!\Pimcore\Tool::classExists($classname)) {
-                            $oldStyleClass = '\\Document_' . ucfirst($mainDocument->getType());
-                            if (\Pimcore\Tool::classExists($oldStyleClass)) {
-                                $classname = $oldStyleClass;
+                            // this is the fallback for custom document types using prefixes
+                            // so we need to check if the class exists first
+                            if (!\Pimcore\Tool::classExists($classname)) {
+                                $oldStyleClass = '\\Document_' . ucfirst($mainDocument->getType());
+                                if (\Pimcore\Tool::classExists($oldStyleClass)) {
+                                    $classname = $oldStyleClass;
+                                }
                             }
-                        }
 
-                        if (Tool::classExists($classname)) {
-                            $document = $classname::create($translateDocument->getParentId(), $createValues);
-                            try {
-                                $document->save();
-                                $success = true;
-                            } catch (\Exception $e) {
-                                return $this->adminJson(['success' => false, 'message' => $e->getMessage()]);
+                            if (Tool::classExists($classname)) {
+                                $document = $classname::create($translateDocument->getParentId(), $createValues);
+                                try {
+                                    $document->save();
+                                    $success = true;
+                                } catch (\Exception $e) {
+                                    return $this->adminJson(['success' => false, 'message' => $e->getMessage()]);
+                                }
+                                break;
+                            } else {
+                                Logger::debug("Unknown document type, can't add [ " . $mainDocument->getType() . ' ] ');
                             }
                             break;
-                        } else {
-                            Logger::debug("Unknown document type, can't add [ " . $mainDocument->getType() . ' ] ');
-                        }
-                        break;
+                    }
+                } else {
+                    $errorMessage = "prevented adding a document because base document not found. ID:".$translateDocument->getParentDocumentId();
+                    Logger::debug($errorMessage);
                 }
             } else {
-                $errorMessage = "prevented adding a document because base document not found. ID:".$translateDocument->getParentDocumentId();
+                $errorMessage = "prevented adding a document because document with same path+key [ $intendedPath ] already exists";
                 Logger::debug($errorMessage);
             }
-        } else {
-            $errorMessage = "prevented adding a document because document with same path+key [ $intendedPath ] already exists";
+        }else{
+            $errorMessage = "prevented adding a document because parent document not found. ID:".$translateDocument->getParentId();
             Logger::debug($errorMessage);
         }
 
