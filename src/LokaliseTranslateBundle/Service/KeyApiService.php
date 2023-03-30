@@ -3,6 +3,9 @@
 namespace Pdchaudhary\LokaliseTranslateBundle\Service;
 
 use Pdchaudhary\LokaliseTranslateBundle\Model\LocaliseKeys;
+use Pdchaudhary\LokaliseTranslateBundle\Model\LocaliseTranslateObject;
+use Pdchaudhary\LokaliseTranslateBundle\Model\TranslateKeys;
+use Pimcore\Db;
 
 class KeyApiService extends BaseApiService{
 
@@ -142,7 +145,30 @@ class KeyApiService extends BaseApiService{
             $response = $this->getKeySingle($projectId,$key->getKeyId());
             $result = json_decode($response->getContent(false));
             if(!empty($result->error)){
+                $localiseKeyId = $key->getId();
+
+                $docKeys = new TranslateKeys\Listing();
+                $docKeys->setCondition("localise_key_id = ?", $localiseKeyId);
+                $docKeysData = $docKeys->load();
+                if($docKeysData ){
+                    foreach($docKeysData as $docObject){
+                        \Pimcore\Log\Simple::log('test','TranslateKeys:'.$docObject->getId());
+                        $docObject->delete();
+                    }
+                }
+
+                $docKeys = new LocaliseTranslateObject\Listing();
+                $docKeys->setCondition("localise_key_id = ?", $localiseKeyId);
+                $docKeysData = $docKeys->load();
+                if($docKeysData ){
+                    foreach($docKeysData as $docObject){
+
+                        $docObject->delete();
+                    }
+                }
+                
                 $key->delete();
+
             }
            
         }
@@ -151,7 +177,15 @@ class KeyApiService extends BaseApiService{
         
     }
 
+    public function clearDumpData(){
+        $db = Db::get();
+        $db->executeQuery("DELETE  FROM `localise_translate_keys` WHERE localise_key_id not in (select id from localise_keys);");
+        $db->executeQuery("DELETE  FROM `localise_translate_object` WHERE localise_key_id not in (select id from localise_keys);");
+        
+    }
+
     public function syncUpAllKeysWithDb(){
+        $this->clearDumpData();
         $projectDocId = ProjectApiService::getProjectIdByName("Documents");
         $projectObjectId = ProjectApiService::getProjectIdByName("Objects");
         $projectSharedId = ProjectApiService::getProjectIdByName("Shared translation");
