@@ -36,6 +36,7 @@ class DocumentController extends FrontendController
     public function multiLanguageGeneration(Request $request, KeyApiService $keyApiService, WorkflowHelper $workflowHelper){
         set_time_limit (1000);
         ini_set("default_socket_timeout", 1000); 
+       
         $projectId = ProjectApiService::getProjectIdByName("Documents");
         $data = $request->get("data");
         $documentDetails = $request->get("documentData");
@@ -88,10 +89,11 @@ class DocumentController extends FrontendController
         }
 
 
-        $this->deleteOlderLinkedDocument($documentData['translateDocId']);
+    
 
         foreach( $languages as $language){
             $lang = $language[0];
+            $this->deleteOlderLinkedDocument($documentData['translateDocId'],$lang);
             $parentPath = $documentData['parent'.$lang]; 
             $parentEl = Document\Service::getByUrl($parentPath);
             if($parentEl){
@@ -149,10 +151,11 @@ class DocumentController extends FrontendController
     }
 
 
-    public function deleteOlderLinkedDocument($parentId){
+    public function deleteOlderLinkedDocument($parentId,$lang){
 
         $list = new TranslateDocument\Listing();
         $list->setCondition("parentDocumentId = ?", $parentId);
+        $list->setCondition("language = ?", $lang);
         $documents = $list->load();
         foreach($documents as $document){
             $keys = new TranslateKeys\Listing();
@@ -670,6 +673,27 @@ class DocumentController extends FrontendController
         }
         return $status;
     }
+
+    /**
+     * @Route("/admin/lokalise/document/validate-lang")
+     */
+    public function validateOrCreateLanguages(){
+        $projectApiService =  new ProjectApiService();
+        $projectResponse = $projectApiService->getProjects();
+        $projects = $projectResponse->projects;
+        $pimcoreProjects = ProjectApiService::$pimcoreProjects;
+        foreach ($projects as $key => $value) {
+            if(in_array($value->name,$pimcoreProjects)){
+                $projLanguages = $value->statistics->languages;
+                $projectApiService->validateProjectLanguage($projLanguages,$value->project_id);
+            }
+        }
+        
+        return JsonResponse::create([
+            "status" => true,
+        ]);
+    }
+    
 
     
 }

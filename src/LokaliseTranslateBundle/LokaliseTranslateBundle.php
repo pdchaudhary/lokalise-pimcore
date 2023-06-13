@@ -20,6 +20,7 @@ class LokaliseTranslateBundle extends AbstractPimcoreBundle implements PimcoreBu
             '/bundles/lokalisetranslate/js/pimcore/startup.js',
             '/bundles/lokalisetranslate/js/translation/lokaliseobjectFieldsStatus.js',
             '/bundles/lokalisetranslate/js/translation/translateDocumentAll.js',
+            '/bundles/lokalisetranslate/js/translation/translateDocumentSingle.js',
             '/bundles/lokalisetranslate/js/translation/singleTranslateObject.js',
             '/bundles/lokalisetranslate/js/translation/objectUtill.js',
         ];
