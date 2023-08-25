@@ -29,7 +29,7 @@ class TranslateDocument extends AbstractModel {
     /**
      * @var string
      */
-    public $key;
+    public $dockey;
 
     /**
      * @var string
@@ -138,15 +138,21 @@ class TranslateDocument extends AbstractModel {
      /**
      * @param string $key
      */
-    public function setKey($key) {
-        $this->key = $key;
+    public function setDockey($dockey) {
+        $this->dockey = $dockey;
     }
  
     /**
      * @return string
      */
-    public function getKey() {
-        return $this->key;
+    public function getDockey() {
+        return $this->dockey;
+    }
+
+   
+
+    public function getKey(){
+        return $this->dockey;
     }
 
      /**

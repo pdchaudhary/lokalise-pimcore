@@ -43,7 +43,7 @@ class ObjectHelper {
 
     public function getObjectsIds(){
         $db = Db::get();
-        $elems = $db->fetchCol("SELECT o_id FROM `objects` where o_published = 1 and o_type != 'folder'
+        $elems = $db->fetchFirstColumn("SELECT o_id FROM `objects` where o_published = 1 and o_type != 'folder'
         ");
 
         return $elems;

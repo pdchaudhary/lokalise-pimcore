@@ -47,7 +47,7 @@ use Pimcore\Model\Listing\Dao\QueryBuilderHelperTrait;
       *
       * @return Model\TranslateDocument[]
       */
-     public function load()
+     public function load(): array
      {
          // load id's
          $list = $this->loadIdList();
@@ -74,7 +74,7 @@ use Pimcore\Model\Listing\Dao\QueryBuilderHelperTrait;
      {
          try {
             // $query = $this->getQueryBuilderCompatibility(['id']);
-            $objectIds = $this->db->fetchCol(
+            $objectIds = $this->db->fetchFirstColumn(
                 'SELECT id FROM '.$this->getTableName().' '.$this->getCondition().$this->getOrder().$this->getOffsetLimit(),
                 $this->model->getConditionVariables()
             );
@@ -107,7 +107,7 @@ use Pimcore\Model\Listing\Dao\QueryBuilderHelperTrait;
       *
       * @throws \Exception
       */
-     public function getTotalCount()
+     public function getTotalCount(): int
      {
          $amount = (int) $this->db->fetchOne('SELECT COUNT(*) as amount FROM '.$this->getTableName().$this->getCondition(), $this->model->getConditionVariables());
   
@@ -116,7 +116,7 @@ use Pimcore\Model\Listing\Dao\QueryBuilderHelperTrait;
 
      public function getDocumentList($isCreated,$status){
 
-        $objectIds = $this->db->fetchCol('select * from '.$this->getTableName().' where isCreated = ? and status = ? ',[$isCreated,$status]);
+        $objectIds = $this->db->fetchFirstColumn('select * from '.$this->getTableName().' where isCreated = ? and status = ? ',[$isCreated,$status]);
         $objects = array();
         foreach ($objectIds as $o_id) {
              if ($object = Model\TranslateDocument::getById($o_id)) {

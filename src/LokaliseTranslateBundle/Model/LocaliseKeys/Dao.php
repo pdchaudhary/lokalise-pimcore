@@ -18,7 +18,7 @@ class Dao extends AbstractDao {
         if ($id != null)
             $this->model->setId($id);
  
-        $data = $this->db->fetchRow('SELECT * FROM '.$this->tableName.' WHERE id = ?', $this->model->getId());
+        $data = $this->db->fetchAssociative('SELECT * FROM '.$this->tableName.' WHERE id = ?', [$this->model->getId()]);
  
         if(!$data["id"])
             throw new \Exception("Object with the ID " . $this->model->getId() . " doesn't exists");
@@ -39,7 +39,7 @@ class Dao extends AbstractDao {
             $this->model->setKeyName($keyName);
     
            
-        $data = $this->db->fetchRow('SELECT * FROM '.$this->tableName.' WHERE keyName = ?', $this->model->getKeyName());
+        $data = $this->db->fetchAssociative('SELECT * FROM '.$this->tableName.' WHERE keyName = ?', [$this->model->getKeyName()]);
       
         if(!$data["id"])
             throw new \Exception("Object with the keyname " . $this->model->getKeyName() . " doesn't exists");
@@ -59,7 +59,7 @@ class Dao extends AbstractDao {
              $this->model->setKeyId($keyId);
      
             
-         $data = $this->db->fetchRow('SELECT * FROM '.$this->tableName.' WHERE keyId = ?', $this->model->getKeyId());
+         $data = $this->db->fetchAssociative('SELECT * FROM '.$this->tableName.' WHERE keyId = ?',[ $this->model->getKeyId()]);
          
          if(!$data["id"])
              throw new \Exception("Object with the keyname " . $this->model->getKeyId() . " doesn't exists");

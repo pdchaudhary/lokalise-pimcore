@@ -47,7 +47,7 @@ namespace Pdchaudhary\LokaliseTranslateBundle\Model\LocaliseTranslateObject\List
       *
       * @return Model\LocaliseTranslateObject[]
       */
-     public function load()
+     public function load(): array
      {
          // load id's
          $list = $this->loadIdList();
@@ -73,7 +73,7 @@ namespace Pdchaudhary\LokaliseTranslateBundle\Model\LocaliseTranslateObject\List
      public function loadIdList()
      {
          try {
-            $objectIds = $this->db->fetchCol(
+            $objectIds = $this->db->fetchFirstColumn(
                 'SELECT id FROM '.$this->getTableName().' '.$this->getCondition().$this->getOrder().$this->getOffsetLimit(),
                 $this->model->getConditionVariables()
             );
@@ -106,7 +106,7 @@ namespace Pdchaudhary\LokaliseTranslateBundle\Model\LocaliseTranslateObject\List
       *
       * @throws \Exception
       */
-     public function getTotalCount()
+     public function getTotalCount(): int
      {
          $amount = (int) $this->db->fetchOne('SELECT COUNT(*) as amount FROM '.$this->getTableName().$this->getCondition(), $this->model->getConditionVariables());
   

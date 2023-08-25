@@ -18,7 +18,7 @@ class Dao extends AbstractDao {
         if ($id != null)
             $this->model->setId($id);
  
-        $data = $this->db->fetchRow('SELECT * FROM '.$this->tableName.' WHERE id = ?', $this->model->getId());
+        $data = $this->db->fetchAssociative('SELECT * FROM '.$this->tableName.' WHERE id = ?', [$this->model->getId()]);
  
         if(!$data["id"])
             throw new \Exception("Object with the ID " . $this->model->getId() . " doesn't exists");
@@ -43,7 +43,7 @@ class Dao extends AbstractDao {
             $this->model->setLanguage($language);
         }
  
-        $data = $this->db->fetchRow('SELECT * FROM '.$this->tableName.' WHERE parentDocumentId = ? and language = ?', [$this->model->getParentDocumentId(), $this->model->getLanguage()]);
+        $data = $this->db->fetchAssociative('SELECT * FROM '.$this->tableName.' WHERE parentDocumentId = ? and language = ?', [$this->model->getParentDocumentId(), $this->model->getLanguage()]);
  
         if(!$data["id"])
             throw new \Exception("Doesn't exists");
@@ -59,11 +59,11 @@ class Dao extends AbstractDao {
      */
     public function save() {
         $vars = get_object_vars($this->model);
- 
+      
         $buffer = [];
  
         $validColumns = $this->getValidTableColumns($this->tableName);
- 
+     
         if(count($vars))
             foreach ($vars as $k => $v) {
  
@@ -87,7 +87,7 @@ class Dao extends AbstractDao {
             $this->db->update($this->tableName, $buffer, ["id" => $this->model->getId()]);
             return;
         }
- 
+        
         $this->db->insert($this->tableName, $buffer);
         $this->model->setId($this->db->lastInsertId());
     }

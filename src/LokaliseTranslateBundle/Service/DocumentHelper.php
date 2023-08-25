@@ -16,12 +16,12 @@ class DocumentHelper {
         $elements = null;
         $document = Document::getById($documentId);
     
-        $elems = $db->fetchAll("SELECT name, type, data
+        $elems = $db->fetchAllAssociative("SELECT name, type, data
                                     FROM documents_editables
                                     WHERE documentId=" . $documentId . " AND (type='input' OR type='textarea' OR type='wysiwyg' ) and data!=''  AND name not LIKE '%style%'");
 
         if ($elems == null && $document->getContentMasterDocumentId() != null) {
-            $elems = $db->fetchAll("SELECT name, type, data
+            $elems = $db->fetchAllAssociative("SELECT name, type, data
                                     FROM documents_editables
                                     WHERE documentId=" . $document->getContentMasterDocumentId() . " AND (type='input' OR type='textarea' OR type='wysiwyg' ) and data!='' AND name not LIKE '%style%'");
         }
@@ -88,8 +88,8 @@ class DocumentHelper {
 
     public function syncParentWorkFlow($workflowHelper){
         $db = Db::get();
-        $data = $db->fetchAll("SELECT count(*) as count , parentDocumentId FROM `localise_translate_document` WHERE isCreated = 1 and status = 'done' group by parentDocumentId");
-        $countData = $db->fetchAll("SELECT count(*) as count , parentDocumentId FROM `localise_translate_document` group by parentDocumentId");
+        $data = $db->fetchAllAssociative("SELECT count(*) as count , parentDocumentId FROM `localise_translate_document` WHERE isCreated = 1 and status = 'done' group by parentDocumentId");
+        $countData = $db->fetchAllAssociative("SELECT count(*) as count , parentDocumentId FROM `localise_translate_document` group by parentDocumentId");
         if($data){
             foreach($data as $value){
                 if($value["count"] == $countData[0]['count']){

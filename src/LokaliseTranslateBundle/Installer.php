@@ -12,7 +12,7 @@ use Pimcore\Extension\Bundle\Installer\SettingsStoreAwareInstaller;
 class Installer extends SettingsStoreAwareInstaller
 {
 
-    public function install()
+    public function install(): void
     {
         $projectApiService =  new ProjectApiService();
         $projectApiService->createProjectOnLokalise();
@@ -20,7 +20,7 @@ class Installer extends SettingsStoreAwareInstaller
         parent::install();
     }
 
-    public function uninstall()
+    public function uninstall(): void
     {
         $tables = [
             'localise_translate_document',
@@ -38,7 +38,7 @@ class Installer extends SettingsStoreAwareInstaller
      /**
      * {@inheritdoc}
      */
-    public function needsReloadAfterInstall()
+    public function needsReloadAfterInstall(): bool
     {
         return true;
     }

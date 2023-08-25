@@ -197,7 +197,7 @@ class SharedTranslationController extends FrontendController
     {
         $authKey = WebsiteSetting::getByName("deepl_auth_key") ? WebsiteSetting::getByName("deepl_auth_key")->getData() : null;
 
-        return JsonResponse::create([
+        return new JsonResponse([
                 "authKey" => $authKey,
                 "exists" => (($authKey == null || "") ? false : true),
         ]);

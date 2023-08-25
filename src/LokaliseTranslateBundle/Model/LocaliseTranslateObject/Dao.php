@@ -18,7 +18,7 @@ class Dao extends AbstractDao {
         if ($id != null)
             $this->model->setId($id);
  
-        $data = $this->db->fetchRow('SELECT * FROM '.$this->tableName.' WHERE id = ?', $this->model->getId());
+        $data = $this->db->fetchAssociative('SELECT * FROM '.$this->tableName.' WHERE id = ?', [$this->model->getId()]);
  
         if(!$data["id"])
             throw new \Exception("Object with the ID " . $this->model->getId() . " doesn't exists");
@@ -43,7 +43,7 @@ class Dao extends AbstractDao {
             $this->model->setLanguage($lang);
         }
  
-        $data = $this->db->fetchRow('SELECT * FROM '.$this->tableName.' WHERE localise_key_id = ? and language = ?', [$this->model->getLocalise_key_id(), $this->model->getLanguage()]);
+        $data = $this->db->fetchAssociative('SELECT * FROM '.$this->tableName.' WHERE localise_key_id = ? and language = ?', [$this->model->getLocalise_key_id(), $this->model->getLanguage()]);
  
         if(!$data["id"])
             throw new \Exception("Object with the ID " . $this->model->getLocalise_key_id() . " doesn't exists");

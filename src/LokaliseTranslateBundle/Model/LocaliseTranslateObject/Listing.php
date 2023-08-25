@@ -12,7 +12,7 @@ class Listing extends Model\Listing\AbstractListing implements PaginateListingIn
      *
      * @var array
      */
-    public $data = null;
+    public ?array $data = null;
  
     /**
      * @var string
@@ -22,7 +22,7 @@ class Listing extends Model\Listing\AbstractListing implements PaginateListingIn
     /**
      * @return array
      */
-    public function getData()
+    public function getData(): ?array
     {
         if ($this->data === null) {
             $this->load();
@@ -36,7 +36,7 @@ class Listing extends Model\Listing\AbstractListing implements PaginateListingIn
      *
      * @return static
      */
-    public function setData(?array $data): self
+    public function setData(?array $data): static
     {
         $this->data = $data;
 
@@ -48,7 +48,7 @@ class Listing extends Model\Listing\AbstractListing implements PaginateListingIn
      *
      * @return mixed
      */
-    public function count()
+    public function count(): int
     {
         return $this->getTotalCount();
     }
@@ -72,7 +72,7 @@ class Listing extends Model\Listing\AbstractListing implements PaginateListingIn
      *
      * @return mixed
      */
-    public function getItems($offset, $itemCountPerPage)
+    public function getItems($offset, $itemCountPerPage): array
     {
         $this->setOffset($offset);
         $this->setLimit($itemCountPerPage);
@@ -117,7 +117,7 @@ class Listing extends Model\Listing\AbstractListing implements PaginateListingIn
     /**
      * Rewind.
      */
-    public function rewind()
+    public function rewind(): void
     {
         $this->getData();
         reset($this->data);
@@ -128,7 +128,7 @@ class Listing extends Model\Listing\AbstractListing implements PaginateListingIn
      *
      * @return mixed
      */
-    public function current()
+    public function current(): mixed
     {
         $this->getData();
         $var = current($this->data);
@@ -141,7 +141,7 @@ class Listing extends Model\Listing\AbstractListing implements PaginateListingIn
      *
      * @return mixed
      */
-    public function key()
+    public function key(): string|int|null
     {
         $this->getData();
         $var = key($this->data);
@@ -154,12 +154,10 @@ class Listing extends Model\Listing\AbstractListing implements PaginateListingIn
      *
      * @return mixed
      */
-    public function next()
+    public function next(): void
     {
         $this->getData();
-        $var = next($this->data);
- 
-        return $var;
+        next($this->data);
     }
  
     /**
@@ -167,7 +165,7 @@ class Listing extends Model\Listing\AbstractListing implements PaginateListingIn
      *
      * @return bool
      */
-    public function valid()
+    public function valid(): bool
     {
         $this->getData();
         $var = $this->current() !== false;

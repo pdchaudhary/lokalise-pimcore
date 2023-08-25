@@ -101,7 +101,7 @@ class DocumentController extends FrontendController
                 $translateDocument->setParentDocumentId($documentData['translateDocId']);
                 $translateDocument->setLanguage($lang);
                 $translateDocument->setParentId($parentEl->getId());
-                $translateDocument->setKey($documentData['key'.$lang]);
+                $translateDocument->setDockey($documentData['key'.$lang]);
                 $translateDocument->setNavigation($documentData['name'.$lang]);
                 $translateDocument->setTitle($documentData['title'.$lang]);
                 $translateDocument->setStatus('new');
@@ -154,8 +154,7 @@ class DocumentController extends FrontendController
     public function deleteOlderLinkedDocument($parentId,$lang){
 
         $list = new TranslateDocument\Listing();
-        $list->setCondition("parentDocumentId = ?", $parentId);
-        $list->setCondition("language = ?", $lang);
+        $list->setCondition("parentDocumentId = ? and language = ?", [ $parentId, $lang]);
         $documents = $list->load();
         foreach($documents as $document){
             $keys = new TranslateKeys\Listing();
@@ -630,7 +629,7 @@ class DocumentController extends FrontendController
     {
         $documentId = $request->get("id");
         $elements = $documentHelper->getAllKeys($documentId);
-        return JsonResponse::create([
+        return new JsonResponse([
             "elements" => $elements,
         ]);
     }
@@ -645,7 +644,7 @@ class DocumentController extends FrontendController
         $languages = $documentDetails['language'];
         $documentData = $documentDetails['documentData'];
         $data = $documentHelper->validateDocumentList($languages,$documentData);
-        return JsonResponse::create([
+        return new JsonResponse([
             "status" => $data,
         ]);
         
@@ -657,7 +656,7 @@ class DocumentController extends FrontendController
     public function isAllowedToUpdate(Request $request){
         $documentId = $request->get("documentId");
         $status = $this->toCheckAllowUpdate($documentId);
-        return JsonResponse::create([
+        return new JsonResponse([
             "status" => $status,
         ]);
 
@@ -689,7 +688,7 @@ class DocumentController extends FrontendController
             }
         }
         
-        return JsonResponse::create([
+        return new JsonResponse([
             "status" => true,
         ]);
     }

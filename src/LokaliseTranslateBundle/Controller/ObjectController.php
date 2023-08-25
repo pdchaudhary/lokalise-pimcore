@@ -8,6 +8,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\HttpClient\HttpClient;
 use Pimcore\Db;
+use Pimcore\Tool;
 use Pimcore\Document as PimcoreDocument;
 use Pimcore\Model\Document;
 use Pimcore\Model\DataObject;
@@ -337,6 +338,8 @@ class ObjectController extends FrontendController
         $translations = $keyApiService->getReviewedTranslation($projectId);
         $objectsIds = [];
         $deleteLokliaseKeys = [];
+        $defaultLanguage = Tool::getDefaultLanguage();
+        
         if(!empty($translations)){
             foreach($translations as $keyItem){
                 $is_unverified =(int) $keyItem->is_unverified;
@@ -344,6 +347,10 @@ class ObjectController extends FrontendController
                 if(1 == $is_reviewed && 0 == $is_unverified){
                     $keyId = $keyItem->key_id;
                     $lang = $keyItem->language_iso;
+                    if($lang == $defaultLanguage){
+                        continue; //skip master language update
+                    }
+                    
                     $translation = $keyItem->translation;
                     $keyData =  LocaliseKeys::getByKeyId($keyId);
                     if($keyData){
@@ -777,7 +784,7 @@ class ObjectController extends FrontendController
    
         $keyIds = array_values($keyIds); 
     
-        return JsonResponse::create([
+        return new JsonResponse([
             "success"=>true,
             "total" => count($keyIds),
             "data" =>  $keyIds
@@ -798,7 +805,7 @@ class ObjectController extends FrontendController
         if(count($documents) > 0){
             $status = true;
         }
-        return JsonResponse::create([
+        return new JsonResponse([
             "status" => $status,
         ]);
     }

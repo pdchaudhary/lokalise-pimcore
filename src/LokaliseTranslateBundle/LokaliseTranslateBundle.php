@@ -6,15 +6,18 @@ use Pimcore\Extension\Bundle\AbstractPimcoreBundle;
 use Pimcore\Extension\Bundle\PimcoreBundleInterface;
 use PackageVersions\Versions;
 use Pimcore\Extension\Bundle\Traits\PackageVersionTrait;
+use Pimcore\Extension\Bundle\Installer\InstallerInterface;
+use Pimcore\Extension\Bundle\PimcoreBundleAdminClassicInterface;
+use Pimcore\Extension\Bundle\Traits\BundleAdminClassicTrait;
 
-class LokaliseTranslateBundle extends AbstractPimcoreBundle implements PimcoreBundleInterface
+class LokaliseTranslateBundle extends AbstractPimcoreBundle implements PimcoreBundleInterface, PimcoreBundleAdminClassicInterface
 {
-
+    use BundleAdminClassicTrait;
     use PackageVersionTrait;
     const PACKAGE_NAME = 'pdchaudhary/lokalise-pimcore';
     const BUNDLE_NAME = 'LokaliseTranslateBundle';
     
-    public function getJsPaths()
+    public function getJsPaths(): array
     {
         return [
             '/bundles/lokalisetranslate/js/pimcore/startup.js',
@@ -26,35 +29,43 @@ class LokaliseTranslateBundle extends AbstractPimcoreBundle implements PimcoreBu
         ];
     }
 
-    public function getInstaller()
+    public function getInstaller(): ?InstallerInterface
     {
         return $this->container->get(Installer::class);
     }
 
-    public function getNiceName()
+    public function getNiceName(): string
     {
         return 'Lokalise Translate Bundle';
     }
 
 
-    public function getEditmodeJsPaths(){
+    public function getEditmodeJsPaths(): array
+    {
         return [
-      
+            '/bundles/lokalisetranslate/js/pimcore/startup.js',
+            '/bundles/lokalisetranslate/js/translation/lokaliseobjectFieldsStatus.js',
+            '/bundles/lokalisetranslate/js/translation/translateDocumentAll.js',
+            '/bundles/lokalisetranslate/js/translation/translateDocumentSingle.js',
+            '/bundles/lokalisetranslate/js/translation/singleTranslateObject.js',
+            '/bundles/lokalisetranslate/js/translation/objectUtill.js',
         ];
     }
 
-    public function getCssPaths()
+    public function getCssPaths(): array
     {
         return [
             '/bundles/lokalisetranslate/css/index.css'
         ];
     }
 
-    public function getVersion(){
-        return "2.0";
+    public function getVersion(): string 
+    {
+        return "3.0";
     }
 
-    public static function getSolutionVersion(){
+    public static function getSolutionVersion(): string 
+    {
         //code duplication from PackageVersionTrait... sorry
         $version = Versions::getVersion(self::PACKAGE_NAME);
 

@@ -1,12 +1,14 @@
 pimcore.registerNS("pimcore.plugin.LokaliseTranslateBundle");
 
-pimcore.plugin.LokaliseTranslateBundle = Class.create(pimcore.plugin.admin, {
+pimcore.plugin.LokaliseTranslateBundle = Class.create({
     getClassName: function () {
         return "pimcore.plugin.LokaliseTranslateBundle";
     },
 
     initialize: function () {
-        pimcore.plugin.broker.registerPlugin(this);
+        document.addEventListener(pimcore.events.pimcoreReady, this.pimcoreReady.bind(this));
+        document.addEventListener(pimcore.events.postOpenObject, this.postOpenObject.bind(this));
+        document.addEventListener(pimcore.events.postOpenDocument, this.postOpenDocument.bind(this));
     },
 
     pimcoreReady: function (params, broker) {
@@ -22,7 +24,8 @@ pimcore.plugin.LokaliseTranslateBundle = Class.create(pimcore.plugin.admin, {
         layoutToolbar.settingsMenu.add(settingsItems);
     },
 
-    postOpenObject: function (object, type) {
+    postOpenObject: function (e) {
+        var { object, type } = e.detail;
         /* add quickTranslate icon to objects with localizedfields */
         if (type === "object") {
             if (object.data.data.hasOwnProperty("localizedfields")) {
@@ -87,11 +90,10 @@ pimcore.plugin.LokaliseTranslateBundle = Class.create(pimcore.plugin.admin, {
     },
 
 
-    postOpenDocument: function (document, type) {
+    postOpenDocument: function (e) {
+        var { document, type } = e.detail;
         /* add quicktranslate button to specific document type */
         if (type == "page" || type == "snippet" || type == "printpage") {
-         
-
             
             if (!Ext.isIE) {
                 if("en" == document.data.properties["language"]["data"] ){
