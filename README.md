@@ -20,10 +20,16 @@ This extension will work as a bridge between Pimcore and Lokalise for the purpos
 ```bash
 composer require pdchaudhary/lokalise-pimcore:1.0.7
 ``` 
-* Pimcore X (since Version 2.0)
+* Pimcore 10 
 
 ```bash
-composer require pdchaudhary/lokalise-pimcore
+composer require pdchaudhary/lokalise-pimcore:2.x
+``` 
+
+* Pimcore 11 
+
+```bash
+composer require pdchaudhary/lokalise-pimcore:3.0
 ``` 
 
 # Installation
