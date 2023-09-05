@@ -15,16 +15,25 @@ This extension will work as a bridge between Pimcore and Lokalise for the purpos
 - Auto push on publish event in Document and Object (New)
 
 # Requirements
+
+* Pimcore 11 
+
+```bash
+composer require pdchaudhary/lokalise-pimcore:3.0
+```
+
+* Pimcore 10 
+
+```bash
+composer require pdchaudhary/lokalise-pimcore:2.x
+``` 
+
 * Pimcore 5.8 or 6.x
 
 ```bash
 composer require pdchaudhary/lokalise-pimcore:1.0.7
 ``` 
-* Pimcore X (since Version 2.0)
 
-```bash
-composer require pdchaudhary/lokalise-pimcore
-``` 
 
 # Installation
 
