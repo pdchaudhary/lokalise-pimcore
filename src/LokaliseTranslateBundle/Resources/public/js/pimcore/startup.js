@@ -6,9 +6,11 @@ pimcore.plugin.LokaliseTranslateBundle = Class.create({
     },
 
     initialize: function () {
-        document.addEventListener(pimcore.events.pimcoreReady, this.pimcoreReady.bind(this));
-        document.addEventListener(pimcore.events.postOpenObject, this.postOpenObject.bind(this));
-        document.addEventListener(pimcore.events.postOpenDocument, this.postOpenDocument.bind(this));
+        if(pimcore.events){
+            document.addEventListener(pimcore.events.pimcoreReady, this.pimcoreReady.bind(this));
+            document.addEventListener(pimcore.events.postOpenObject, this.postOpenObject.bind(this));
+            document.addEventListener(pimcore.events.postOpenDocument, this.postOpenDocument.bind(this));
+        }
     },
 
     pimcoreReady: function (params, broker) {
