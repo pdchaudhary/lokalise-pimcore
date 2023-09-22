@@ -333,7 +333,7 @@ class ObjectController extends FrontendController
      */
     public function objectTranslationSync(ObjectHelper $objectHelper){
         $keyApiService  = new KeyApiService();
-      
+        \Pimcore\Model\Version::disable();
         $projectId = ProjectApiService::getProjectIdByName("Objects");
         $translations = $keyApiService->getReviewedTranslation($projectId);
         $objectsIds = [];
