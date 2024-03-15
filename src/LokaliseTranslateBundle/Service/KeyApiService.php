@@ -97,21 +97,27 @@ class KeyApiService extends BaseApiService{
     }
 
 
-    public function getAllkeysById($projectId,$objectName){
+    public function getAllkeysById($projectId,$objectId){
         $keys = [];
         $keyLimit = self::PAGINATIONLIMIT;
-        $response = $this->getKeysByName($projectId,$objectName,1,$keyLimit);
-        $result = json_decode($response->getContent(false));
-        $keys = array_merge($keys,$result->keys);
-        $pageLimit = $response->getHeaders()['x-pagination-page-count'][0];
-        if($pageLimit > 1 ){
-            for ($page= 2; $page<=$pageLimit;$page++) {
-                $response = $this->getKeysByName($projectId,$objectName,$page,$keyLimit);
-                $result = json_decode($response->getContent(false));
-                $keys = array_merge($keys,$result->keys);
+        $lokalisKeyIds = LocaliseKeys\Listing::getLokaliseKeyIds($objectId,'object');
+        $transaltions = [];
+        if(!empty($lokalisKeyIds)){
+            $lokalisKeyIdString = implode(',',$lokalisKeyIds);
+            $response = $this->getKeysByName($projectId,$lokalisKeyIdString,1,$keyLimit);
+            $result = json_decode($response->getContent(false));
+            $keys = array_merge($keys,$result->keys);
+            $pageLimit = $response->getHeaders()['x-pagination-page-count'][0];
+            if($pageLimit > 1 ){
+                for ($page= 2; $page<=$pageLimit;$page++) {
+                    $response = $this->getKeysByName($projectId,$lokalisKeyIdString,$page,$keyLimit);
+                    $result = json_decode($response->getContent(false));
+                    $keys = array_merge($keys,$result->keys);
+                }
             }
+            $transaltions =  $this->getTranslationFromKeys($keys);
         }
-        $transaltions =  $this->getTranslationFromKeys($keys);
+        
         return $transaltions;
     }
 
@@ -127,7 +133,7 @@ class KeyApiService extends BaseApiService{
 
     public function getKeysByName($projectId,$name,$page,$keyLimit){
         $apiPath = $this->getKeyApiPath($projectId);
-        $apiPath = '/projects/'.$projectId.'/keys?include_translations=1&filter_tags='.$name.'&limit='.$limit.'&page='.$page;
+        $apiPath = '/projects/'.$projectId.'/keys?include_translations=1&filter_key_ids='.$name.'&limit='.$keyLimit.'&page='.$page;
         $response = $this->callGetApi($apiPath);
         return $response;
     }

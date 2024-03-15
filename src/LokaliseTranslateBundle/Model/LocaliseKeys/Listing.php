@@ -161,4 +161,11 @@ class Listing extends Model\Listing\AbstractListing implements PaginateListingIn
  
         return $var;
     }
+
+    public static function getLokaliseKeyIds($elementId, $type){
+
+        $obj = new self;
+        $data = $obj->getDao()->getLokaliseKeyIds($elementId, $type);
+        return $data ;
+    }
 }

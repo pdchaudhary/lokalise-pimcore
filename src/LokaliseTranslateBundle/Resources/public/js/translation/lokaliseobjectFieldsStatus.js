@@ -23,12 +23,15 @@ pimcore.element.lokaliseobjectFieldsStatus = Class.create({
 
             
 
-            var languagestore = getLanguages();
+            var languagestore = this.getLanguages();
             var columns = [
                 {text: t("Field name"), sortable: false, dataIndex: 'fieldName', flex: 20},
             ];
             var fields = ["fieldName"];
             for (let index = 0; index < languagestore.length; index++) {
+                if(languagestore[index][0] == 'en'){
+                    continue;
+                }
                 columns.push({text: t(languagestore[index][1]), sortable: false, dataIndex: languagestore[index][0], flex: 20});
                 fields.push(languagestore[index][0]);
             }

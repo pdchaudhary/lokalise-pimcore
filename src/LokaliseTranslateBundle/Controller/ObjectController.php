@@ -29,6 +29,8 @@ use Pimcore\Model\DataObject\Concrete as ConcreteObject;
 use Pimcore\Model\DataObject\ClassDefinition;
 use Pimcore\Model\DataObject\ClassDefinition\Data\Fieldcollections;
 use Pimcore\Model\DataObject\ClassDefinition\Data\Objectbricks;
+use Elements\Bundle\ProcessManagerBundle\Helper;
+use Elements\Bundle\ProcessManagerBundle\Model\Configuration;
 
 class ObjectController extends FrontendController
 {
@@ -342,13 +344,14 @@ class ObjectController extends FrontendController
         if($objectId == 0){
             $translations = $keyApiService->getReviewedTranslation($projectId);
         }else{
+
             $translations = $keyApiService->getAllkeysById($projectId,$objectId);
         }
         
         $objectsIds = [];
         $deleteLokliaseKeys = [];
         $defaultLanguage = Tool::getDefaultLanguage();
-        
+       
         if(!empty($translations)){
             foreach($translations as $keyItem){
                 $is_unverified =(int) $keyItem->is_unverified;
@@ -462,6 +465,7 @@ class ObjectController extends FrontendController
         if(!empty($deleteLokliaseKeys)){
             $keyApiService->deleteKeys($projectId,$deleteLokliaseKeys);
         }
+       
         $objectHelper->syncWorkFlowForObjects($objectsIds);
         return new Response('okay');
     }
@@ -818,6 +822,107 @@ class ObjectController extends FrontendController
         return new JsonResponse([
             "status" => $status,
         ]);
+    }
+
+
+    /**
+     * @Route("/admin/lokalise/object/individual-sync")
+     */
+    public function objectIndividualSync(Request $request){
+        $objectId = $request->get("objectId");
+        if($objectId){
+
+        
+            $configuration = Configuration::getByName('individualObjectSync',1);
+            $data = [
+                'values' => [
+                    'id' => 'individualObjectSync',
+                    'name' => 'individualObjectSync',
+                    'group' => '',
+                    'description' => '',
+                    'restrictToRoles' => '',
+                    'restrictToPermissions' => '',
+                    'callback' => '',
+                    'defaultPreDefinedConfig' => '',
+                    'command' => 'lokalise:object-sync-individual',
+                    'commandOptions' => $objectId,
+                    'cronjob' => '',
+                    'keepVersions' => '',
+                    'deleteAfterHours' => '',
+                ],
+                'executorConfig' => [
+                    'name' => 'pimcoreCommand',
+                    'extJsClass' => 'pimcore.plugin.processmanager.executor.class.pimcoreCommand',
+                    'class' => 'Elements\\Bundle\\ProcessManagerBundle\\Executor\\PimcoreCommand',
+                    'config' => '',
+                ],
+                'actions' => [],
+                'loggers' => [],
+            ];
+            $values = $data['values'];
+
+            $executorConfig = $data['executorConfig'];
+
+            $actions = $data['actions'];
+            /**
+             * @var AbstractExecutor $executorClass
+             */
+            $executorClass = new $executorConfig['class']();
+            $executorClass->setValues($data['values']);
+    
+            $actions = [];
+    
+            foreach ($data['actions'] as $actionData) {
+                /**
+                 * @var AbstractAction $obj
+                 */
+                $className = $actionData['class'];
+                $obj = new $className();
+                $obj->setValues($actionData);
+                $actions[] = $obj;
+            }
+            $executorClass->setActions($actions);
+            $executorClass->setLoggers($data['loggers']);
+            
+            if (!$configuration) { // Does the id exist?
+
+
+                
+
+                $configuration = new Configuration();
+                $configuration->setActive(true);
+
+                foreach ($values as $key => $v) {
+                    $setter = 'set' . ucfirst((string)$key);
+                    if (method_exists($configuration, $setter)) {
+                        $configuration->$setter(trim((string)$v));
+                    }
+                }
+                $configuration->setExecutorClass($executorConfig['class']);
+                $configuration->setExecutorSettings($executorClass->getStorageValue());
+        
+                try {
+                    $configuration->save();
+                } catch (\Exception $e) {
+                
+                    return new JsonResponse(['success' => false, 'message' => $e->getMessage()]);
+                }
+                
+            }
+            $configuration[0]->setExecutorClass($executorConfig['class']);
+            $configuration[0]->setExecutorSettings($executorClass->getStorageValue());
+             $configuration[0]->save();
+           
+            Helper::executeJob(
+                $configuration[0]->getId(),
+                [],
+                1,
+                [],
+                null
+            );
+        }
+
+        return new JsonResponse(['testing']);
     }
 
 

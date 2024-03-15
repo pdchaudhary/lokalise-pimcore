@@ -179,4 +179,6 @@ class Listing extends Model\Listing\AbstractListing implements PaginateListingIn
         $data = $obj->getDao()->isObjectReviewed($objectId);
         return $data ;
     }
+
+ 
 }

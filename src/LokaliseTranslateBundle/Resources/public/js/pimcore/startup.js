@@ -47,11 +47,13 @@ pimcore.plugin.LokaliseTranslateBundle = Class.create({
                         ]
                         if(isAllowedResponse.status){
                             items.push({ text: 'Update' });
+                            items.push({ text: 'Sync' });
+
                         }
 
                         var menu =   {
                             xtype: 'button',
-                            text: t('Lokalise Translate'),
+                            text: t('Lokalise'),
                             iconCls: 'lokalise-translate-icon',
                             scale: 'small',
                             menu: {
@@ -64,6 +66,10 @@ pimcore.plugin.LokaliseTranslateBundle = Class.create({
                                         }
                                         if(item.text == "Update"){
                                             updateLokaliseObject(object);
+                                        }
+
+                                        if(item.text == "Sync"){
+                                            syncLokaliseObject(object);
                                         }
                                     }
                                 }
@@ -96,7 +102,7 @@ pimcore.plugin.LokaliseTranslateBundle = Class.create({
         var { document, type } = e.detail;
         /* add quicktranslate button to specific document type */
         if (type == "page" || type == "snippet" || type == "printpage") {
-            
+      
             if (!Ext.isIE) {
                 if("en" == document.data.properties["language"]["data"] ){
                     this.docBtn(document);

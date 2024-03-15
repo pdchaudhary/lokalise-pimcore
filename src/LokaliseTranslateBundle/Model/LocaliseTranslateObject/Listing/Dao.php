@@ -122,8 +122,10 @@ namespace Pdchaudhary\LokaliseTranslateBundle\Model\LocaliseTranslateObject\List
 
     public function isObjectReviewed($objectId){
 
-        $amount = (int) $this->db->fetchOne('SELECT COUNT(*) as amount FROM '.$this->getTableName().' WHERE object_id = ? and is_pushed = 0', [$objectId]);
+        $amount = (int) $this->db->fetchOne('SELECT COUNT(*) as amount FROM '.$this->getTableName().' WHERE object_id = ? and is_pushed = 0 and language != "en"', [$objectId]);
         return $amount;
-     }
+    }
+
+    
 
  }

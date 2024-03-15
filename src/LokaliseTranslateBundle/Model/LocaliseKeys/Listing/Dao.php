@@ -112,4 +112,19 @@ namespace Pdchaudhary\LokaliseTranslateBundle\Model\LocaliseKeys\Listing;
   
          return $amount;
      }
+
+     public function getLokaliseKeyIds($elementId, $type){
+
+
+        try {
+            // $query = $this->getQueryBuilderCompatibility(['id']);
+            $objectIds = $this->db->fetchFirstColumn('SELECT keyId FROM '.$this->tableName.' WHERE elementId = ?  and type = ?  group by keyId ', [$elementId, $type]);
+          
+            return array_map('intval', $objectIds);
+         } catch (\Exception $e) {
+             throw $e;
+         }
+
+        
+    }
  }
