@@ -5,7 +5,8 @@
     "require": {
         "pimcore/pimcore": ">=6.0",
         "php": ">=7.0",
-        "elements/process-manager-bundle": ">=v3.1.9"
+        "elements/process-manager-bundle": ">=v3.1.9",
+        "symfony/http-client": "^6.3"
     },
     "keywords": [
         "pimcore",
