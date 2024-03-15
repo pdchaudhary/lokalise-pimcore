@@ -110,28 +110,29 @@ class SharedTranslationController extends FrontendController
     public function createSharedKeys($newKeys,$keyApiService){
 
         $projectId = ProjectApiService::getProjectIdByName("Shared translation");
+
         if(!empty($newKeys)){
             $newcontent = $keyApiService->createKeys($projectId,$newKeys);
-        }
-  
-        $keysResponse = $newcontent->keys;
+        
+            $keysResponse = $newcontent->keys;
 
-        if(!empty($keysResponse)){
+            if(!empty($keysResponse)){
 
-            foreach($keysResponse as $keyItem){
-                $keyItemObject  = LocaliseKeys::getByKeyName($keyItem->key_name->web,1 );
+                foreach($keysResponse as $keyItem){
+                    $keyItemObject  = LocaliseKeys::getByKeyName($keyItem->key_name->web,1 );
+                    
+                    if(NULL === $keyItemObject ){
+                        $localiseKeys = new LocaliseKeys();
+                        $localiseKeys->setElementId(0); 
+                        $localiseKeys->setKeyName($keyItem->key_name->web); 
+                        $localiseKeys->setKeyId($keyItem->key_id);
+                        $localiseKeys->setKeyValue("");
+                        $localiseKeys->setFieldType("");
+                        $localiseKeys->setType(LocaliseKeys::$sharedType);
+                        $localiseKeys->save();
+                    }
                 
-                if(NULL === $keyItemObject ){
-                    $localiseKeys = new LocaliseKeys();
-                    $localiseKeys->setElementId(0); 
-                    $localiseKeys->setKeyName($keyItem->key_name->web); 
-                    $localiseKeys->setKeyId($keyItem->key_id);
-                    $localiseKeys->setKeyValue("");
-                    $localiseKeys->setFieldType("");
-                    $localiseKeys->setType(LocaliseKeys::$sharedType);
-                    $localiseKeys->save();
                 }
-            
             }
         }
 
@@ -169,10 +170,13 @@ class SharedTranslationController extends FrontendController
                         $keyNameArray = explode('||',$keyNameObject);
                         $keyName = $keyNameArray[1];
                         $transObject =  Translation::getByKey($keyName);
-                        $transaltionsObject = $transObject->getTranslations();
-                        $transaltionsObject[$lang] =  $translation;
-                        $transObject->setTranslations($transaltionsObject);
-                        $transObject->save();
+                        if(!empty($transObject)){
+                            $transaltionsObject = $transObject->getTranslations();
+                            $transaltionsObject[$lang] =  $translation;
+                            $transObject->setTranslations($transaltionsObject);
+                            $transObject->save();
+                        }
+                        
                     }
                 }
             }

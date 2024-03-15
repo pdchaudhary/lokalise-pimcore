@@ -96,15 +96,55 @@ class KeyApiService extends BaseApiService{
         return $keys;
     }
 
+
+    public function getAllkeysById($projectId,$objectName){
+        $keys = [];
+        $keyLimit = self::PAGINATIONLIMIT;
+        $response = $this->getKeysByName($projectId,$objectName,1,$keyLimit);
+        $result = json_decode($response->getContent(false));
+        $keys = array_merge($keys,$result->keys);
+        $pageLimit = $response->getHeaders()['x-pagination-page-count'][0];
+        if($pageLimit > 1 ){
+            for ($page= 2; $page<=$pageLimit;$page++) {
+                $response = $this->getKeysByName($projectId,$objectName,$page,$keyLimit);
+                $result = json_decode($response->getContent(false));
+                $keys = array_merge($keys,$result->keys);
+            }
+        }
+        $transaltions =  $this->getTranslationFromKeys($keys);
+        return $transaltions;
+    }
+
+    public function getTranslationFromKeys($keys){
+        $transaltions = [];
+
+        foreach($keys as $key){
+            $transaltions = array_merge($transaltions,$key->translations); 
+        }
+        return $transaltions;
+    }
+
+
+    public function getKeysByName($projectId,$name,$page,$keyLimit){
+        $apiPath = $this->getKeyApiPath($projectId);
+        $apiPath = '/projects/'.$projectId.'/keys?include_translations=1&filter_tags='.$name.'&limit='.$limit.'&page='.$page;
+        $response = $this->callGetApi($apiPath);
+        return $response;
+    }
+
+
     public function syncAllKeys($projectId,$projectType){
         $keys = $this->getAllkeys($projectId);
      
         foreach($keys as $key){
             $keyId = $key->key_id;
             $custom_attributes = json_decode($key->custom_attributes);
-            $mainType = $custom_attributes->mainType;
-            $elementId = $custom_attributes->elementId;
-            $fieldType = $custom_attributes->type;
+            $mainType = $elementId = $fieldType = '';
+            if($custom_attributes){
+                $mainType = $custom_attributes->mainType;
+                $elementId = $custom_attributes->elementId;
+                $fieldType = $custom_attributes->type;
+            }
             $transaltions = $key->translations;
             if(NULL == $fieldType){
                 $fieldType = "";
@@ -152,7 +192,7 @@ class KeyApiService extends BaseApiService{
                 $docKeysData = $docKeys->load();
                 if($docKeysData ){
                     foreach($docKeysData as $docObject){
-                        \Pimcore\Log\Simple::log('test','TranslateKeys:'.$docObject->getId());
+                       
                         $docObject->delete();
                     }
                 }

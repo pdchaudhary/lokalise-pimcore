@@ -27,6 +27,8 @@ use Pdchaudhary\LokaliseTranslateBundle\Service\ObjectHelper;
 use Pdchaudhary\LokaliseTranslateBundle\Service\WorkflowHelper;
 use Pimcore\Model\DataObject\Concrete as ConcreteObject;
 use Pimcore\Model\DataObject\ClassDefinition;
+use Pimcore\Model\DataObject\ClassDefinition\Data\Fieldcollections;
+use Pimcore\Model\DataObject\ClassDefinition\Data\Objectbricks;
 
 class ObjectController extends FrontendController
 {
@@ -49,7 +51,7 @@ class ObjectController extends FrontendController
         $objectBricks = [];
         $fieldDefinations = $classDefinition->getFieldDefinitions();
         foreach ($fieldDefinations as $key => $value) {
-            if($value->fieldtype == 'objectbricks'){
+            if($value instanceof Objectbricks){
                 $objectBricks[$key] = [$value];
             }
         }
@@ -84,9 +86,10 @@ class ObjectController extends FrontendController
         $fieldCollections = [];
         $fieldDefinations = $classDefinition->getFieldDefinitions();
         foreach ($fieldDefinations as $key => $value) {
-            if($value->fieldtype == 'fieldcollections'){
+            if($value instanceof Fieldcollections){
                 $fieldCollections[$key] = [$value];
             }
+           
         }
         $fieldCollectionLanguageData = [];
         foreach ($fieldCollections as $fieldkey => $fieldvalue) {
@@ -331,11 +334,17 @@ class ObjectController extends FrontendController
      /**
      * @Route("/admin/lokalise/object/sync-key")
      */
-    public function objectTranslationSync(ObjectHelper $objectHelper){
+    public function objectTranslationSync(ObjectHelper $objectHelper, $objectId=0){
         $keyApiService  = new KeyApiService();
         \Pimcore\Model\Version::disable();
+
         $projectId = ProjectApiService::getProjectIdByName("Objects");
-        $translations = $keyApiService->getReviewedTranslation($projectId);
+        if($objectId == 0){
+            $translations = $keyApiService->getReviewedTranslation($projectId);
+        }else{
+            $translations = $keyApiService->getAllkeysById($projectId,$objectId);
+        }
+        
         $objectsIds = [];
         $deleteLokliaseKeys = [];
         $defaultLanguage = Tool::getDefaultLanguage();
@@ -535,6 +544,7 @@ class ObjectController extends FrontendController
         }
 
         $fieldCollections = $this->getLokaliseFieldCollectionData($object);
+        
         if($fieldCollections){
             foreach($fieldCollections as  $fields){
                 foreach($fields['keys'] as $key => $field){

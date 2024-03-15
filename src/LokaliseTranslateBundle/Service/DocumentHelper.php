@@ -20,11 +20,7 @@ class DocumentHelper {
                                     FROM documents_editables
                                     WHERE documentId=" . $documentId . " AND (type='input' OR type='textarea' OR type='wysiwyg' ) and data!=''  AND name not LIKE '%style%'");
 
-        if ($elems == null && $document->getContentMasterDocumentId() != null) {
-            $elems = $db->fetchAllAssociative("SELECT name, type, data
-                                    FROM documents_editables
-                                    WHERE documentId=" . $document->getContentMasterDocumentId() . " AND (type='input' OR type='textarea' OR type='wysiwyg' ) and data!='' AND name not LIKE '%style%'");
-        }
+       
         
         
         foreach ($elems as $element) {
