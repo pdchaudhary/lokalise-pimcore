@@ -12,7 +12,8 @@ This extension will work as a bridge between Pimcore and Lokalise for the purpos
 - Workflow management
 - Translation progress tracking
 - Works with Bulk Objects - Push and Pull for Translation
-- Auto push on publish event in Document and Object (New)
+- Auto push on publish event in Document and Object **(New)**
+- Individual Object Sync **(New)**
 
 # Requirements
 
