@@ -97,10 +97,10 @@ class KeyApiService extends BaseApiService{
     }
 
 
-    public function getAllkeysById($projectId,$objectId){
+    public function getAllkeysById($projectId,$objectId,$type){
         $keys = [];
         $keyLimit = self::PAGINATIONLIMIT;
-        $lokalisKeyIds = LocaliseKeys\Listing::getLokaliseKeyIds($objectId,'object');
+        $lokalisKeyIds = LocaliseKeys\Listing::getLokaliseKeyIds($objectId,$type);
         $transaltions = [];
         if(!empty($lokalisKeyIds)){
             $lokalisKeyIdString = implode(',',$lokalisKeyIds);

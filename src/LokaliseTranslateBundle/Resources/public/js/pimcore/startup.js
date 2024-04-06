@@ -130,10 +130,12 @@ pimcore.plugin.LokaliseTranslateBundle = Class.create({
                 var isAllowedResponse = JSON.parse(response.responseText, true);
                 var items = [
                     { text: 'Create Single' },
-                    { text: 'Create All' }
+                    { text: 'Create All' },
+                    
                 ]
                 if(isAllowedResponse.status){
                     items.push({ text: 'Update' });
+                    items.push({ text: 'Sync' }); 
                 }
 
                 var menu =   {
@@ -155,6 +157,9 @@ pimcore.plugin.LokaliseTranslateBundle = Class.create({
                                 }
                                 if(item.text == "Update"){
                                     updateLokaliseDocument(document);
+                                }
+                                if(item.text == "Sync"){
+                                    syncLokaliseDocument(document);
                                 }
                             }
                         }

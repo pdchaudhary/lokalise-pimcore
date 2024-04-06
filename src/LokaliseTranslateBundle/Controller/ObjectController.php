@@ -345,7 +345,7 @@ class ObjectController extends FrontendController
             $translations = $keyApiService->getReviewedTranslation($projectId);
         }else{
 
-            $translations = $keyApiService->getAllkeysById($projectId,$objectId);
+            $translations = $keyApiService->getAllkeysById($projectId,$objectId,'object');
         }
         
         $objectsIds = [];
@@ -922,7 +922,7 @@ class ObjectController extends FrontendController
             );
         }
 
-        return new JsonResponse(['testing']);
+        return new JsonResponse(['Completed']);
     }
 
 

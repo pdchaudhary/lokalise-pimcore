@@ -379,7 +379,7 @@ function updateLokaliseapiPostDocumentAll(settings) {
 
 
 
-function updateLokaliseDocument(document) {
+function updateLokaliseDocument(document) { 
 	this.element = document;
 	var settings = {};
 	var documentId = this.element.id;
@@ -432,3 +432,44 @@ function syncAllDocuments() {
 
 	deeplAjax(url);
 }
+
+function syncLokaliseDocument(document){
+
+    this.element = document;
+    var settings = {};
+    var objectId  = this.element.id;
+    settings  = this.syncLokaliseapiPostDocument(settings);
+ 
+    var elementsWindow = appTranslatecreateWindow("Processing", "Processing.. ");
+    function deeplAjax(settings) {
+
+     
+        Ext.Ajax.request({
+            url: settings.url,
+            method: 'POST',
+            params: {
+                objectId:objectId,
+            },
+            success: function (response) {
+             
+                elementsWindow.destroy();
+                appTranslatecreateWindow("Successfully", "Sync initiated! 🚀 Keep your eyes on the process manager for updates.");
+                object.reload();
+            }
+        });
+
+    };
+    
+    deeplAjax(settings);
+
+}
+
+function syncLokaliseapiPostDocument(settings) {
+
+	settings.method = "POST";
+	settings.url = '/admin/lokalise/document/individual-sync';
+
+	return settings;
+
+}
+
