@@ -9,6 +9,7 @@ use Pimcore\Console\AbstractCommand;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\Console\Input\InputArgument;
 
 class DocumentSyncIndividual extends AbstractCommand {
 
@@ -27,6 +28,7 @@ class DocumentSyncIndividual extends AbstractCommand {
 		$this
 			->setName('lokalise:document-sync-individual')
 			->setDescription('Individual Document Sync Command')
+            ->addArgument('objectKey', InputArgument::REQUIRED, 'objectKey Required.')
             ->addOption(
                 'monitoring-item-id',
                 null,

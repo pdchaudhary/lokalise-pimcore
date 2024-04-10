@@ -185,11 +185,11 @@ class DocumentController extends FrontendController
         
         $keyApiService = new KeyApiService();
         $projectId = ProjectApiService::getProjectIdByName("Documents");
-
+        $isHardRefresh = false;
         if($objectId == 0){
             $translations = $keyApiService->getReviewedTranslation($projectId);
         }else{
-
+            $isHardRefresh = true;
             $translations = $keyApiService->getAllkeysById($projectId,$objectId,'document');
         }
     
@@ -205,7 +205,7 @@ class DocumentController extends FrontendController
                     if(NULL != $keyData){
                         $keyObjectId = $keyData->getId();
                         $localiseTranslateObject = TranslateKeys::getByKeyIdAndLang($keyObjectId,$lang); 
-                        if($localiseTranslateObject && $localiseTranslateObject->getModified_at_timestamp() < $keyItem->modified_at_timestamp){
+                        if(($localiseTranslateObject && ($localiseTranslateObject->getModified_at_timestamp() < $keyItem->modified_at_timestamp || $isHardRefresh) )  ){
                             $localiseTranslateObject->setIs_pushed(false);
                             $localiseTranslateObject->setIs_reviewed(true);
                             $localiseTranslateObject->setValueData($translation);
@@ -229,6 +229,8 @@ class DocumentController extends FrontendController
 
 
     public function createDocuments($workflowHelper){
+
+        $this->validateCreatedDocument();
         $list = new TranslateDocument\Listing();
         $list->setCondition("isCreated = ?", 0);
         $translateDocuments = $list->load();
@@ -238,6 +240,7 @@ class DocumentController extends FrontendController
           
             if( $isDocumentReviewed ){
                 $translatedKeys = $this->getDocumentKeys($translateDocumentId);
+              
                 $data = $this->saveDocument($translateDocument, $translatedKeys, $workflowHelper);
                 if($data['success']){
                     $translateDocument->setIsCreated(1);
@@ -349,7 +352,7 @@ class DocumentController extends FrontendController
         if($parentDocument){
             $intendedPath = $parentDocument->getRealFullPath() . '/' . $translateDocument->getKey();
         
-        
+           
 
             if (!Document\Service::pathExists($intendedPath)) {
                 $createValues = [
@@ -784,10 +787,12 @@ class DocumentController extends FrontendController
                     return new JsonResponse(['success' => false, 'message' => $e->getMessage()]);
                 }
                 
+            }else{
+                $configuration[0]->setExecutorClass($executorConfig['class']);
+                $configuration[0]->setExecutorSettings($executorClass->getStorageValue());
+                $configuration[0]->save();
             }
-            $configuration[0]->setExecutorClass($executorConfig['class']);
-            $configuration[0]->setExecutorSettings($executorClass->getStorageValue());
-             $configuration[0]->save();
+           
            
             Helper::executeJob(
                 $configuration[0]->getId(),
@@ -799,6 +804,44 @@ class DocumentController extends FrontendController
         }
 
         return new JsonResponse(['Completed']);
+    }
+
+    public function validateCreatedDocument(){
+        $list = new TranslateDocument\Listing();
+        $list->setCondition("isCreated = ?", 1);
+        $translateDocuments = $list->load();
+        foreach($translateDocuments as $translateDocument){
+            $mainDocument =  Document::getById(intval($translateDocument->getParentDocumentId()));
+            $parentDocument = Document::getById(intval($translateDocument->getParentId()));
+            if($parentDocument){
+                $intendedPath = $parentDocument->getRealFullPath() . '/' . $translateDocument->getKey();
+                if (!Document\Service::pathExists($intendedPath)) {
+            
+                    $translateDocument->setIsCreated(0);
+                    $translateDocument->setStatus("new");
+                    $translateDocument->save();
+
+                }
+            }
+        }
+    }
+
+    /** 
+     * @Route("/admin/lokalise/document/source-document")
+    */
+    public function findSourceDocument(Request $request){
+        $documentId = $request->get("documentId");
+        $targetDocument = Document::getById($documentId);
+        $service = new Document\Service;
+        $sourceDocId = $service->getTranslationSourceId($targetDocument);
+        
+        $status = $this->toCheckAllowUpdate($sourceDocId);
+       
+        return new JsonResponse([
+            "status" => $status,
+            "sourceDocId" => $sourceDocId,
+        ]);
+
     }
     
 

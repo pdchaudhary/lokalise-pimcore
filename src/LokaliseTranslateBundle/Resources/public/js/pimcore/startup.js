@@ -106,6 +106,8 @@ pimcore.plugin.LokaliseTranslateBundle = Class.create({
             if (!Ext.isIE) {
                 if("en" == document.data.properties["language"]["data"] ){
                     this.docBtn(document);
+                }else{
+                    this.syncDocBtn(document);
                 }
             }
 
@@ -140,7 +142,7 @@ pimcore.plugin.LokaliseTranslateBundle = Class.create({
 
                 var menu =   {
                     xtype: 'button',
-                    text: t('Lokalise Translate'),
+                    text: t('Lokalise'),
                     iconCls: 'lokalise-translate-icon',
                     scale: 'small',
                     menu: {
@@ -160,6 +162,72 @@ pimcore.plugin.LokaliseTranslateBundle = Class.create({
                                 }
                                 if(item.text == "Sync"){
                                     syncLokaliseDocument(document);
+                                }
+                            }
+                        }
+                    }
+                };
+
+
+            
+                menuParent.add(menu);
+                if(isAllowedResponse.status){
+                    /* menuParent.add({
+                        text: t('Sync All'),
+                        iconCls: 'lokalise-translate-icon',
+                        scale: 'small',
+                        handler: function () {
+                            syncAllDocuments()
+                        }
+                    });*/
+                }
+
+            }
+        });
+
+       
+  
+    },
+
+    syncDocBtn: function (document) {
+
+        var menuParent;
+        menuParent = document.toolbar;
+
+        var items = [
+      
+            
+        ]
+        var isAllowedResponse; 
+        Ext.Ajax.request({
+            url: '/admin/lokalise/document/source-document',
+            method: 'GET',
+            params: {
+                documentId:document.id,
+            },
+            success: function (response) {
+                isAllowedResponse = JSON.parse(response.responseText, true);
+              
+                if(isAllowedResponse.status){
+             
+                    items.push({ text: 'Sync' }); 
+                }
+           
+                
+                var menu =   {
+                    xtype: 'button',
+                    text: t('Lokalise'),
+                    iconCls: 'lokalise-translate-icon',
+                    scale: 'small',
+                    menu: {
+                        xtype: 'menu',
+                        items: items,
+                        listeners: {
+                            click: function( menu, item, e, eOpts ) {
+                              
+                                if(item.text == "Sync"){
+                                 
+                                    syncLokaliseDocument(document,isAllowedResponse.sourceDocId);
                                 }
                             }
                         }

@@ -433,11 +433,16 @@ function syncAllDocuments() {
 	deeplAjax(url);
 }
 
-function syncLokaliseDocument(document){
+function syncLokaliseDocument(document,sourceId = 0){
 
     this.element = document;
     var settings = {};
-    var objectId  = this.element.id;
+	if(sourceId == 0){
+		var objectId  = this.element.id;
+	}else{
+		var objectId  = sourceId;
+	}
+   
     settings  = this.syncLokaliseapiPostDocument(settings);
  
     var elementsWindow = appTranslatecreateWindow("Processing", "Processing.. ");
@@ -454,7 +459,7 @@ function syncLokaliseDocument(document){
              
                 elementsWindow.destroy();
                 appTranslatecreateWindow("Successfully", "Sync initiated! 🚀 Keep your eyes on the process manager for updates.");
-                object.reload();
+                
             }
         });
 
