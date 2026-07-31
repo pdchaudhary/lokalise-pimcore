@@ -317,6 +317,7 @@ class DocumentController extends FrontendController
                     }
                     $newDoc->save();
                     $workflowHelper->applyWorkFlow(DocumentHelper::WORKFLOWNAME, $newDoc, 'Verified');
+                    $this->addStaticDocumentQueueItem($translateDoc);
                 }
                 
 
@@ -472,6 +473,7 @@ class DocumentController extends FrontendController
 
                         $newDoc->save();
                         $workflowHelper->applyWorkFlow(DocumentHelper::WORKFLOWNAME, $newDoc, 'Verified');
+                       // $this->addStaticDocumentQueueItem($translationsBaseDocument);
                     }
 
                 }
@@ -843,7 +845,215 @@ class DocumentController extends FrontendController
         ]);
 
     }
-    
 
-    
+    /**
+     * @Route("/admin/lokalise/document/parent-links")
+     */
+    public function documentParentLinks(Request $request): JsonResponse
+    {
+        $documentId = (int) $request->get('id');
+        $document = Document::getById($documentId);
+
+        if (!$document) {
+            return new JsonResponse([
+                'success' => false,
+                'message' => 'Document not found',
+                'rows' => []
+            ], 404);
+        }
+
+        if (!$document->isAllowed('list')) {
+            return new JsonResponse([
+                'success' => false,
+                'message' => 'Permission denied',
+                'rows' => []
+            ], 403);
+        }
+
+        $rows = [];
+        $documentService = new Document\Service();
+        $translationMap = $documentService->getTranslations($document);
+        $linkedDocumentIds = [$document->getId()];
+        foreach ($translationMap as $translationDocumentId) {
+            $linkedDocumentIds[] = (int) $translationDocumentId;
+        }
+        $linkedDocumentIds = array_values(array_unique($linkedDocumentIds));
+
+        foreach ($linkedDocumentIds as $linkedDocumentId) {
+            $linkedDocument = Document::getById((int) $linkedDocumentId);
+            if (!$linkedDocument || !$linkedDocument->isAllowed('list')) {
+                continue;
+            }
+
+            $parentDocument = $linkedDocument->getParent();
+            $rows[] = [
+                'recordType' => 'document',
+                'documentId' => $linkedDocument->getId(),
+                'language' => (string) ($linkedDocument->getProperty('language') ?? ''),
+                'status' => $linkedDocument->getPublished() ? 'published' : 'unpublished',
+                'documentPath' => $linkedDocument->getFullPath(),
+                'parentId' => $parentDocument ? $parentDocument->getId() : null,
+                'parentPath' => $parentDocument ? $parentDocument->getFullPath() : '/',
+                'isCurrentDocument' => $linkedDocument->getId() === $document->getId(),
+            ];
+        }
+
+        $queueList = new TranslateDocument\Listing();
+        $queueList->setCondition("parentDocumentId = ?", [$documentId]);
+        $queuedItems = $queueList->load();
+
+        foreach ($queuedItems as $queuedItem) {
+            $targetParent = Document::getById((int) $queuedItem->getParentId());
+            $targetParentPath = $targetParent ? $targetParent->getFullPath() : '';
+            $targetDocumentPath = $targetParentPath && $queuedItem->getDockey()
+                ? rtrim($targetParentPath, '/') . '/' . ltrim($queuedItem->getDockey(), '/')
+                : '';
+
+            if ($queuedItem->getIsCreated() || ($targetDocumentPath && Document\Service::pathExists($targetDocumentPath))) {
+                continue;
+            }
+
+            $rows[] = [
+                'recordType' => 'queue',
+                'documentId' => null,
+                'language' => (string) $queuedItem->getLanguage(),
+                'status' => (string) $queuedItem->getStatus(),
+                'documentPath' => $targetDocumentPath,
+                'parentId' => $targetParent ? $targetParent->getId() : null,
+                'parentPath' => $targetParentPath,
+                'isCurrentDocument' => false,
+            ];
+        }
+
+        return new JsonResponse([
+            'success' => true,
+            'rows' => $rows
+        ]);
+    }
+
+    private function addStaticDocumentQueueItem(?Document $document): void
+    {
+        if (!$document instanceof Document\Page || !$document->getProperty('static_page')) {
+            return;
+        }
+
+        $queueKey = 'document_' . $document->getId();
+        $staticPageQueue = DataObject\StaticPageQueue::getByPath('/StaticPageQueue/' . $queueKey);
+        if ($staticPageQueue) {
+            return;
+        }
+
+        $folder = DataObject\Folder::getByPath('/StaticPageQueue');
+        if (!$folder) {
+            $folder = new DataObject\Folder();
+            $folder->setKey('StaticPageQueue');
+            $folder->setParentId(1);
+            $folder->save();
+        }
+
+        $staticPageQueue = new DataObject\StaticPageQueue();
+        $staticPageQueue->setKey($queueKey);
+        $staticPageQueue->setParent($folder);
+        $staticPageQueue->setPageType('Document');
+        $staticPageQueue->setMainId($document->getId());
+        $staticPageQueue->setPublished(true);
+        $staticPageQueue->save();
+    }
+
+    /**
+     * @Route("/admin/lokalise/document/keys-status")
+     */
+    public function documentKeysStatus(Request $request): JsonResponse
+    {
+        $documentId = (int) $request->get('id');
+        $document = Document::getById($documentId);
+
+        if (!$document) {
+            return new JsonResponse([
+                'success' => false,
+                'message' => 'Document not found',
+                'rows' => [],
+                'summary' => []
+            ], 404);
+        }
+
+        if (!$document->isAllowed('list')) {
+            return new JsonResponse([
+                'success' => false,
+                'message' => 'Permission denied',
+                'rows' => [],
+                'summary' => []
+            ], 403);
+        }
+
+        $keysList = new LocaliseKeys\Listing();
+        $keysList->setCondition('elementId = ? and type = ?', [$documentId, LocaliseKeys::$docType]);
+        $keys = $keysList->load();
+
+        $keysById = [];
+        foreach ($keys as $keyItem) {
+            $keysById[$keyItem->getId()] = $keyItem;
+        }
+
+        $rows = [];
+        $summary = [];
+
+        if (!empty($keysById)) {
+            $translateDocList = new TranslateDocument\Listing();
+            $translateDocList->setCondition('parentDocumentId = ?', [$documentId]);
+            $translateDocuments = $translateDocList->load();
+
+            foreach ($translateDocuments as $translateDocument) {
+                $language = $translateDocument->getLanguage();
+                $totalCount = 0;
+                $pendingCount = 0;
+
+                $translateKeysList = new TranslateKeys\Listing();
+                $translateKeysList->setCondition('translate_document_id = ?', [$translateDocument->getId()]);
+                $translateKeys = $translateKeysList->load();
+
+                foreach ($translateKeys as $translateKey) {
+                    $keyItem = $keysById[$translateKey->getLocalise_key_id()] ?? null;
+                    if (!$keyItem) {
+                        continue;
+                    }
+
+                    $keyNameParts = explode('||', (string) $keyItem->getKeyName());
+                    $fieldName = $keyNameParts[1] ?? $keyItem->getKeyName();
+                    $isReviewed = (bool) $translateKey->getIs_reviewed();
+
+                    $totalCount++;
+                    if (!$isReviewed) {
+                        $pendingCount++;
+                    }
+
+                    $rows[] = [
+                        'language' => $language,
+                        'fieldName' => $fieldName,
+                        'sourceValue' => $keyItem->getKeyValue(),
+                        'translatedValue' => $translateKey->getValueData(),
+                        'isReviewed' => $isReviewed,
+                        'isPushed' => (bool) $translateKey->getIs_pushed(),
+                        'documentStatus' => $translateDocument->getStatus(),
+                        'isLinked' => (bool) $translateDocument->getIsCreated(),
+                    ];
+                }
+
+                $summary[] = [
+                    'language' => $language,
+                    'documentStatus' => $translateDocument->getStatus(),
+                    'isLinked' => (bool) $translateDocument->getIsCreated(),
+                    'totalKeys' => $totalCount,
+                    'pendingReview' => $pendingCount,
+                ];
+            }
+        }
+
+        return new JsonResponse([
+            'success' => true,
+            'rows' => $rows,
+            'summary' => $summary
+        ]);
+    }
+
 }

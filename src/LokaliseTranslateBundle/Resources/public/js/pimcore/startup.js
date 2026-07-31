@@ -100,6 +100,8 @@ pimcore.plugin.LokaliseTranslateBundle = Class.create({
 
     postOpenDocument: function (e) {
         var { document, type } = e.detail;
+        this.addLinkedParentsTab(document, type);
+        this.addTranslationKeysTab(document, type);
         /* add quicktranslate button to specific document type */
         if (type == "page" || type == "snippet" || type == "printpage") {
       
@@ -114,6 +116,257 @@ pimcore.plugin.LokaliseTranslateBundle = Class.create({
 
         }
 
+    },
+
+    addLinkedParentsTab: function (document, type) {
+        if (!(type == "page" || type == "snippet" || type == "printpage")) {
+            return;
+        }
+
+        var tabPanel = document.tabbar;
+        if (!tabPanel || typeof tabPanel.add !== "function") {
+            return;
+        }
+
+        var tabId = "lokalise-linked-parents-tab-" + document.id;
+        if (Ext.getCmp(tabId)) {
+            return;
+        }
+
+        var store = new Ext.data.JsonStore({
+            autoLoad: false,
+            fields: [
+                "recordType",
+                "documentId",
+                "language",
+                "status",
+                "documentPath",
+                "parentId",
+                "parentPath",
+                "isCurrentDocument"
+            ],
+            proxy: {
+                type: "ajax",
+                url: "/admin/lokalise/document/parent-links",
+                extraParams: {
+                    id: document.id
+                },
+                reader: {
+                    type: "json",
+                    rootProperty: "rows"
+                }
+            }
+        });
+
+        var tab = new Ext.Panel({
+            id: tabId,
+            title: t("Linked Parents"),
+            iconCls: "pimcore_material_icon_account_tree",
+            layout: "fit",
+            border: false,
+            items: [{
+                xtype: "grid",
+                border: false,
+                store: store,
+                columns: [
+                    {
+                        xtype: "actioncolumn",
+                        text: "Open",
+                        width: 70,
+                        align: "center",
+                        items: [{
+                            iconCls: "pimcore_icon_open",
+                            tooltip: t("Open document"),
+                            isDisabled: function (view, rowIndex, colIndex, item, record) {
+                                return !record.get("documentId");
+                            },
+                            handler: function (grid, rowIndex) {
+                                var record = grid.getStore().getAt(rowIndex);
+                                var docId = record.get("documentId");
+                                if (docId) {
+                                    pimcore.helpers.openDocument(docId);
+                                }
+                            }
+                        }]
+                    },
+                    { text: "Type", dataIndex: "recordType", width: 90 },
+                    { text: "Document ID", dataIndex: "documentId", width: 110 },
+                    { text: "Language", dataIndex: "language", width: 90 },
+                    { text: "Status", dataIndex: "status", width: 110 },
+                    { text: "Document Path", dataIndex: "documentPath", flex: 1 },
+                    { text: "Parent Path", dataIndex: "parentPath", flex: 1 },
+                    {
+                        text: "Current",
+                        dataIndex: "isCurrentDocument",
+                        width: 80,
+                        renderer: function (value) {
+                            return value ? "Yes" : "No";
+                        }
+                    }
+                ],
+                listeners: {
+                    itemdblclick: function (grid, record) {
+                        var docId = record.get("documentId");
+                        if (docId) {
+                            pimcore.helpers.openDocument(docId);
+                        }
+                    }
+                }
+            }],
+            listeners: {
+                activate: function () {
+                    if (!store._isLoadedOnce) {
+                        store.load({
+                            callback: function () {
+                                store._isLoadedOnce = true;
+                            }
+                        });
+                    }
+                }
+            }
+        });
+
+        tabPanel.add(tab);
+        tabPanel.updateLayout();
+    },
+
+    addTranslationKeysTab: function (document, type) {
+        if (!(type == "page" || type == "snippet" || type == "printpage")) {
+            return;
+        }
+
+        var tabPanel = document.tabbar;
+        if (!tabPanel || typeof tabPanel.add !== "function") {
+            return;
+        }
+
+        var tabId = "lokalise-review-keys-tab-" + document.id;
+        if (Ext.getCmp(tabId)) {
+            return;
+        }
+
+        var summaryStore = new Ext.data.JsonStore({
+            autoLoad: false,
+            fields: ["language", "documentStatus", "isLinked", "totalKeys", "pendingReview"],
+            proxy: {
+                type: "ajax",
+                url: "/admin/lokalise/document/keys-status",
+                extraParams: {
+                    id: document.id
+                },
+                reader: {
+                    type: "json",
+                    rootProperty: "summary"
+                }
+            }
+        });
+
+        var keysStore = new Ext.data.JsonStore({
+            autoLoad: false,
+            fields: [
+                "language",
+                "fieldName",
+                "sourceValue",
+                "translatedValue",
+                "isReviewed",
+                "isPushed",
+                "documentStatus",
+                "isLinked"
+            ],
+            proxy: {
+                type: "ajax",
+                url: "/admin/lokalise/document/keys-status",
+                extraParams: {
+                    id: document.id
+                },
+                reader: {
+                    type: "json",
+                    rootProperty: "rows"
+                }
+            }
+        });
+
+        var yesNoRenderer = function (value) {
+            return value ? '<span style="color:#2e7d32;font-weight:bold;">' + t("yes") + '</span>' : '<span style="color:#c62828;font-weight:bold;">' + t("no") + '</span>';
+        };
+
+        var summaryGrid = new Ext.grid.GridPanel({
+            title: t("Languages"),
+            region: "north",
+            height: 150,
+            split: true,
+            store: summaryStore,
+            border: false,
+            columns: [
+                { text: "Language", dataIndex: "language", width: 90 },
+                { text: "Document Status", dataIndex: "documentStatus", width: 130 },
+                { text: "Linked", dataIndex: "isLinked", width: 80, renderer: yesNoRenderer },
+                { text: "Total Keys", dataIndex: "totalKeys", width: 90 },
+                {
+                    text: "Pending Review",
+                    dataIndex: "pendingReview",
+                    width: 110,
+                    renderer: function (value) {
+                        if (value > 0) {
+                            return '<span style="color:#c62828;font-weight:bold;">' + value + '</span>';
+                        }
+                        return value;
+                    }
+                }
+            ],
+            viewConfig: {
+                forceFit: true
+            }
+        });
+
+        var keysGrid = new Ext.grid.GridPanel({
+            title: t("Keys"),
+            region: "center",
+            flex: 1,
+            store: keysStore,
+            border: false,
+            columnLines: true,
+            stripeRows: true,
+            autoScroll: true,
+            columns: [
+                { text: "Language", dataIndex: "language", width: 90 },
+                { text: "Field", dataIndex: "fieldName", width: 150 },
+                { text: "Source (EN)", dataIndex: "sourceValue", flex: 1 },
+                { text: "Translation", dataIndex: "translatedValue", flex: 1 },
+                { text: "Reviewed", dataIndex: "isReviewed", width: 90, renderer: yesNoRenderer },
+                { text: "Pushed", dataIndex: "isPushed", width: 90, renderer: yesNoRenderer }
+            ],
+            viewConfig: {
+                forceFit: false
+            }
+        });
+
+        var tab = new Ext.Panel({
+            id: tabId,
+            title: t("Review Keys"),
+            iconCls: "lokalise-translate-icon",
+            layout: {
+                type: "vbox",
+                align: "stretch"
+            },
+            border: false,
+            items: [summaryGrid, keysGrid],
+            listeners: {
+                activate: function () {
+                    if (!keysStore._isLoadedOnce) {
+                        summaryStore.load();
+                        keysStore.load({
+                            callback: function () {
+                                keysStore._isLoadedOnce = true;
+                            }
+                        });
+                    }
+                }
+            }
+        });
+
+        tabPanel.add(tab);
+        tabPanel.updateLayout();
     },
 
     docBtn: function (document) {

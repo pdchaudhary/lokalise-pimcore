@@ -86,10 +86,15 @@ class DocumentHelper {
         $db = Db::get();
         $data = $db->fetchAllAssociative("SELECT count(*) as count , parentDocumentId FROM `localise_translate_document` WHERE isCreated = 1 and status = 'done' group by parentDocumentId");
         $countData = $db->fetchAllAssociative("SELECT count(*) as count , parentDocumentId FROM `localise_translate_document` group by parentDocumentId");
+        $totalByParentDocumentId = [];
+        foreach ($countData as $countItem) {
+            $totalByParentDocumentId[(int) $countItem['parentDocumentId']] = (int) $countItem['count'];
+        }
+
         if($data){
             foreach($data as $value){
-                if($value["count"] == $countData[0]['count']){
-                    $documentId = $value["parentDocumentId"];
+                $documentId = (int) $value["parentDocumentId"];
+                if((int) $value["count"] == ($totalByParentDocumentId[$documentId] ?? 0)){
                     $document =  Document::getById($documentId);
                     if($document){
                         $workflowHelper->applyWorkFlow(self::WORKFLOWNAME, $document, 'Generated');
